@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity('user')
 export class UserEntity {
+    
     @PrimaryColumn()
     usercode: number;
 
