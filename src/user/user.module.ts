@@ -4,11 +4,13 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
+import { ClassTransformer } from '@nestjs/class-transformer';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
-    HttpModule
+    HttpModule,
+    ClassTransformer
   ],
   controllers: [UserController],
   providers: [UserService]
