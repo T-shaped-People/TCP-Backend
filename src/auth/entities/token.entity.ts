@@ -13,16 +13,9 @@ export class TokenEntity {
     })
     valid: boolean;
 
-    @ManyToOne(
-        type => UserEntity,
-        user => user.usercode
-    )
-    @JoinColumn({
-        name: 'usercode'
-    })
+    @Column({nullable: false})
     usercode: number;
 
     @Column({nullable: false})
     created: Date;
-
 }

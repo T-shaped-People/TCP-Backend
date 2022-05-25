@@ -94,13 +94,20 @@ export class UserService {
       algorithm: 'HS256',
       expiresIn: '1h'
     });
-    const refreshToken = await this.createToken(user.usercode);
+    const refreshToken = this.jwtService.sign({
+      refreshToken: (await this.createToken(user.usercode)).token
+    }, {
+      secret: SECRET_KEY,
+      algorithm: 'HS256',
+      expiresIn: '60d'
+    });
+    
     res.cookie('token', token, {
       path: '/',
       httpOnly: true,
       maxAge: 1000*60*60
     });
-    res.cookie('refreshToken', refreshToken.token, {
+    res.cookie('refreshToken', refreshToken, {
       path: '/',
       httpOnly: true,
       maxAge: 24*60*1000*60*60
@@ -108,7 +115,7 @@ export class UserService {
 
     return {
       token,
-      refreshToken: refreshToken.token
+      refreshToken: refreshToken
     }
   }
 
