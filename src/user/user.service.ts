@@ -1,26 +1,38 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserOAuthDTO } from 'src/user/dto/create-user-oauth.dto';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
-import { BSMOAuthCodeDTO } from 'src/user/dto/bsm-code-dto';
-const { CLIENT_ID, CLIENT_SECRET } = process.env;
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { plainToClass } from '@nestjs/class-transformer';
+import { JwtService } from '@nestjs/jwt';
+import { randomBytes } from 'crypto'
+
+import { CreateUserOAuthDTO } from 'src/user/dto/create-user-oauth.dto';
+import { BSMOAuthCodeDTO } from 'src/user/dto/bsm-code-dto';
 import { BSMOAuthResourceDTO } from 'src/user/dto/bsm-resource.dto';
+import { TokenEntity } from 'src/auth/entities/token.entity';
+import { User } from 'src/auth/user.model';
+
+const { CLIENT_ID, CLIENT_SECRET, SECRET_KEY } = process.env;
 
 @Injectable()
 export class UserService {
   constructor(
     private httpService: HttpService,
-    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>
+    private jwtService: JwtService,
+    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
+    @InjectRepository(TokenEntity) private tokenRepository: Repository<TokenEntity>
   ) {}
   
-  private readonly getOAuthTokenURL = 'https://bssm.kro.kr/api/oauth/token';
-  private readonly getOAuthResourceURL = 'https://bssm.kro.kr/api/oauth/resource';
+  private readonly getOAuthTokenURL = process.env.OAUTH_TOKEN_URL;
+  private readonly getOAuthResourceURL = process.env.OAUTH_RESOURCE_URL;
 
-  async createUserWithOAuth(dto: CreateUserOAuthDTO) {
+  async BSMOAuth(
+    res: Response,
+    dto: CreateUserOAuthDTO
+  ) {
     const { authcode } = dto;
 
     const getTokenPayload = {
@@ -32,14 +44,14 @@ export class UserService {
     try {
       tokenData = plainToClass(BSMOAuthCodeDTO, (await lastValueFrom(this.httpService.post(this.getOAuthTokenURL, (getTokenPayload)))).data);
     } catch (err) {
-      if (err.statusCode == 400) {
-        throw new BadRequestException('Authcode not found');
+      if (err.response.status == 404) {
+        throw new NotFoundException('Authcode not found');
       }
       console.log(err);
       throw new InternalServerErrorException('OAuth Failed');
     }
     if (!tokenData.token) {
-      throw new BadRequestException('Authcode not found');
+      throw new NotFoundException('Authcode not found');
     }
     
     const getResourcePayload = {
@@ -51,17 +63,53 @@ export class UserService {
     try {
       resourceData = plainToClass(BSMOAuthResourceDTO, (await lastValueFrom(this.httpService.post(this.getOAuthResourceURL, (getResourcePayload)))).data.user);
     } catch (err) {
-      if (err.statusCode == 400) {
-        throw new BadRequestException('User not found');
+      if (err.response.status == 404) {
+        throw new NotFoundException('User not found');
       }
       console.log(err);
       throw new InternalServerErrorException('OAuth Failed');
     }
     if (!resourceData.code) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
     }
 
-    this.saveUser(resourceData);
+    let userInfo = await this.getByUsercode(resourceData.code);
+    if (userInfo === null) {
+      await this.saveUser(resourceData);
+      userInfo = await this.getByUsercode(resourceData.code);
+      if (userInfo === null) {
+        throw new NotFoundException('User not Found');
+      }
+    }
+
+    return this.login(res, userInfo);
+  }
+
+  private async login(
+    res: Response,
+    user: User
+  ) {
+    const token = this.jwtService.sign({...user}, {
+      secret: SECRET_KEY,
+      algorithm: 'HS256',
+      expiresIn: '1h'
+    });
+    const refreshToken = await this.createToken(user.usercode);
+    res.cookie('token', token, {
+      path: '/',
+      httpOnly: true,
+      maxAge: 1000*60*60
+    });
+    res.cookie('refreshToken', refreshToken.token, {
+      path: '/',
+      httpOnly: true,
+      maxAge: 24*60*1000*60*60
+    });
+
+    return {
+      token,
+      refreshToken: refreshToken.token
+    }
   }
 
   private async saveUser(
@@ -77,5 +125,23 @@ export class UserService {
     user.name = dto.name;
     user.email = dto.email;
     await this.userRepository.save(user);
+  }
+
+  private async getByUsercode(usercode: number): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: {
+        usercode
+      }
+    })
+  }
+
+  private async createToken(usercode: number): Promise<TokenEntity> {
+    const refreshToken = new TokenEntity();
+    refreshToken.token = randomBytes(64).toString('hex');
+    refreshToken.usercode = usercode;
+    refreshToken.valid = true;
+    refreshToken.created = new Date;
+    await this.tokenRepository.save(refreshToken);
+    return refreshToken;
   }
 }
