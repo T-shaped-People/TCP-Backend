@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from 'src/auth/auth.module';
+import { BoardModule } from 'src/board/board.module';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -17,7 +18,8 @@ import { UserModule } from './user/user.module';
       entities: [__dirname + '/**/entities/*.entity.{js,ts}']
     }),
     AuthModule,
-    UserModule],
+    UserModule,
+    BoardModule],
   controllers: [],
   providers: [],
 })
