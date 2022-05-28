@@ -13,7 +13,10 @@ export class TokenEntity {
     })
     valid: boolean;
 
-    @Column({nullable: false})
+    @Column({
+        nullable: false,
+        unsigned: true
+    })
     usercode: number;
 
     @Column({nullable: false})

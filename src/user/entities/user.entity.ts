@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity('user')
 export class UserEntity {
-    @PrimaryColumn()
+    @PrimaryColumn({unsigned: true})
     usercode: number;
 
     @Column({
@@ -11,16 +11,28 @@ export class UserEntity {
     })
     nickname: string;
 
-    @Column({nullable: false})
+    @Column({
+        nullable: false,
+        type: 'tinyint'
+    })
     enrolled: number;
 
-    @Column({nullable: false})
+    @Column({
+        nullable: false,
+        type: 'tinyint'
+    })
     grade: number;
 
-    @Column({nullable: false})
+    @Column({
+        nullable: false,
+        type: 'tinyint'
+    })
     classNo: number;
 
-    @Column({nullable: false})
+    @Column({
+        nullable: false,
+        type: 'tinyint'
+    })
     studentNo: number;
 
     @Column({

@@ -1,17 +1,20 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('post')
 export class PostEntity {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn('increment')
+    @PrimaryColumn({unsigned: true})
     id: number;
 
     @Column({
-        nullable: false
+        nullable: false,
+        default: false
     })
     deleted: boolean;
     
     @Column({
-        nullable: false
+        nullable: false,
+        unsigned: true
     })
     usercode: number;
     
@@ -27,12 +30,16 @@ export class PostEntity {
     created: Date;
     
     @Column({
-        nullable: false
+        nullable: false,
+        unsigned: true,
+        default: 0
     })
     hit: number;
     
     @Column({
-        nullable: false
+        nullable: false,
+        unsigned: true,
+        default: 0
     })
     commentCnt: number;
 
@@ -43,7 +50,8 @@ export class PostEntity {
     title: string;
 
     @Column({
-        nullable: false
+        nullable: false,
+        type: 'mediumtext'
     })
     content: string;
 }
