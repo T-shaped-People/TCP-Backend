@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user.model';
+import { postListDTO } from 'src/board/dto/post-list.dto';
 import { WritePostDTO } from 'src/board/dto/write-post.dto';
 import { PostService } from './post.service';
 
@@ -11,8 +12,8 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Get()
-  postList() {
-    return this.postService.postList();
+  postList(@Query() dto: postListDTO) {
+    return this.postService.postList(dto);
   }
 
   @Post()
