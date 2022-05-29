@@ -6,4 +6,7 @@ import { UserEntity } from './entities/user.entity';
 @Injectable()
 export class UserService {
   constructor() {}
+  getHello(): string {
+    return 'Hello World!';
+  }
 }
