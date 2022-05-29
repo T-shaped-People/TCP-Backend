@@ -6,6 +6,7 @@ import { PostEntity } from './entities/post.entity';
 import { plainToClass } from '@nestjs/class-transformer';
 import { User } from 'src/auth/user.model';
 import { WritePostDTO } from 'src/board/dto/write-post.dto';
+import { Post } from 'src/board/post.model';
 
 @Injectable()
 export class PostService {
@@ -21,6 +22,25 @@ export class PostService {
   }
 
   private categoryList = {};
+
+  async postList(): Promise<Post[]> {
+    return (await this.postRepository.find({
+      where: {
+        deleted: false
+      },
+      order: {
+        id: 'DESC'
+      }
+    })).map(post => ({
+      id: post.id,
+      usercode: post.usercode,
+      category: post.category,
+      created: post.created,
+      hit: post.hit,
+      commentCnt: post.commentCnt,
+      title: post.title
+    }));
+  }
 
   async WritePost(user: User, dto: WritePostDTO) {
     console.log(this.categoryList)
