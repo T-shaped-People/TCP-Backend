@@ -10,4 +10,8 @@ export class postListDTO {
     @IsNumber()
     @Min(5)
     limit: number = 15;
+    
+    @IsOptional()
+    @IsString()
+    category: string = 'all';
 }

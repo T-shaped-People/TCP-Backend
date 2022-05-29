@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { PostEntity } from './entities/post.entity';
 import { plainToClass } from '@nestjs/class-transformer';
@@ -25,30 +25,22 @@ export class PostService {
   private categoryList = {};
 
   async postList(dto: postListDTO) {
-    const totalPosts = await this.getTotalPosts();
+    const totalPosts = await this.getTotalPosts(dto.category);
     const startPost = (dto.page-1)*dto.limit;
-    console.log(startPost, dto.page)
     const totalPage = Math.ceil(totalPosts/dto.limit);
 
+    const posts: Post[] = (await this.getPostList(startPost, dto.limit, dto.category)).map(post => ({
+      id: post.id,
+      usercode: post.usercode,
+      category: post.category,
+      created: post.created,
+      hit: post.hit,
+      commentCnt: post.commentCnt,
+      title: post.title
+    }));
+
     return {
-      posts: (await this.postRepository.find({
-        where: {
-          deleted: false
-        },
-        take: dto.limit,
-        skip: startPost,
-        order: {
-          id: 'DESC'
-        },
-      })).map(post => ({
-        id: post.id,
-        usercode: post.usercode,
-        category: post.category,
-        created: post.created,
-        hit: post.hit,
-        commentCnt: post.commentCnt,
-        title: post.title
-      })),
+      posts,
       totalPage
     };
   }
@@ -74,15 +66,54 @@ export class PostService {
     await this.postRepository.save(post);
   }
 
-  private async getTotalPosts(): Promise<number> {
-    let result = await this.postRepository.createQueryBuilder('post')
+  private async getTotalPosts(category: string): Promise<number> {
+    let queryButinder = await this.postRepository.createQueryBuilder('post')
       .select('COUNT(id) total')
       .where('deleted=0')
-      .getRawOne()
+    if (category != 'all') {
+      if (category == 'normal') {
+        queryButinder = queryButinder.where('category IS NULL');
+      } else {
+        queryButinder = queryButinder.where('category = :category', {category});
+      }
+    }
+    const result = await queryButinder.getRawOne();
     if (typeof result != 'object') {
       console.error(`Get total post Exception: ${result}`);
       throw new InternalServerErrorException();
     }
     return parseInt(result.total);
+  }
+
+  private async getPostList(
+    startPost: number,
+    limit: number,
+    category: string
+  ) {
+    let whereOption: {} = {
+      deleted: false
+    };
+    if (category != 'all') {
+      if (category == 'normal') {
+        whereOption = {
+          deleted: false,
+          category: null
+        };
+      } else {
+        whereOption = {
+          deleted: false,
+          category
+        };
+      }
+    }
+
+    return this.postRepository.find({
+      where: whereOption,
+      take: limit,
+      skip: startPost,
+      order: {
+        id: 'DESC'
+      },
+    })
   }
 }
