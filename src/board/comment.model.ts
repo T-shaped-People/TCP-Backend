@@ -5,9 +5,6 @@ export class Comment {
     id: number;
 
     @Expose()
-    postId: number;
-
-    @Expose()
     deleted: boolean;
 
     @Expose()

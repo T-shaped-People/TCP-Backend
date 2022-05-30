@@ -7,19 +7,16 @@ export class PostEntity {
     id: number;
 
     @Column({
-        nullable: false,
         default: false
     })
     deleted: boolean;
     
     @Column({
-        nullable: false,
         unsigned: true
     })
     usercode: number;
     
     @Column({
-        nullable: false,
         length: 10
     })
     category: string;
@@ -30,27 +27,23 @@ export class PostEntity {
     created: Date;
     
     @Column({
-        nullable: false,
         unsigned: true,
         default: 0
     })
     hit: number;
     
     @Column({
-        nullable: false,
         unsigned: true,
         default: 0
     })
     commentCnt: number;
 
     @Column({
-        nullable: false,
         length: 50
     })
     title: string;
 
     @Column({
-        nullable: false,
         type: 'mediumtext'
     })
     content: string;

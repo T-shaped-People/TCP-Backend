@@ -7,48 +7,40 @@ export class CommentEntity {
     id: number;
 
     @Column({
-        nullable: false,
         default: false
     })
     deleted: boolean;
     
     @Column({
-        nullable: false,
         unsigned: true
     })
     usercode: number;
     
     @Column({
-        nullable: false,
         unsigned: true
     })
     postId: number;
 
     @Column({
-        nullable: false,
         unsigned: true
     })
     depth: number;
     
     @Column({
-        nullable: false,
         default: false
     })
     parent: boolean;
     
     @Column({
-        nullable: false,
+        nullable: true,
         unsigned: true
     })
     parentId: number;
 
-    @Column({
-        nullable: false
-    })
+    @Column()
     created: Date;
 
     @Column({
-        nullable: false,
         type: 'text'
     })
     content: string;

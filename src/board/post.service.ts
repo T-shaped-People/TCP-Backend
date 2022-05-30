@@ -1,12 +1,12 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { User } from 'src/auth/user.model';
+import { Post } from 'src/board/post.model';
+import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { PostEntity } from './entities/post.entity';
-import { plainToClass } from '@nestjs/class-transformer';
-import { User } from 'src/auth/user.model';
 import { WritePostDTO } from 'src/board/dto/write-post.dto';
-import { Post } from 'src/board/post.model';
 import { postListDTO } from 'src/board/dto/post-list.dto';
 
 @Injectable()
