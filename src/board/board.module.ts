@@ -6,10 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClassTransformer } from '@nestjs/class-transformer';
 import { CategoryEntity } from 'src/board/entities/category.entity';
 import { PostEntity } from 'src/board/entities/post.entity';
+import { CommentEntity } from 'src/board/entities/comment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CategoryEntity, PostEntity]),
+    TypeOrmModule.forFeature([CategoryEntity, PostEntity, CommentEntity]),
     HttpModule,
     ClassTransformer
   ],
