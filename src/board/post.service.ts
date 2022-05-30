@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
@@ -45,12 +45,36 @@ export class PostService {
     };
   }
 
+  async viewPost(user: User, postId: number): Promise<Post> {
+    const postInfo = await this.getPost(postId);
+    if (postInfo === undefined) {
+      throw new NotFoundException('Post not found');
+    }
+    const post = plainToClass(Post, postInfo, {excludeExtraneousValues: true});
+    post.permission = postInfo.usercode == user.usercode;
+    return post;
+  }
+
   async WritePost(user: User, dto: WritePostDTO) {
     if (!this.categoryList[dto.category]) {
       throw new BadRequestException('Category not found');
     }
     await this.savePost(user.usercode, dto);
     return;
+  }
+  
+  async modifyPost(user: User, postId: number, dto: WritePostDTO) {
+    if (!this.categoryList[dto.category]) {
+      throw new BadRequestException('Category not found');
+    }
+    const postInfo = await this.getPost(postId);
+    if (postInfo === undefined) {
+      throw new NotFoundException('Post not found');
+    }
+    if (postInfo.usercode != user.usercode) {
+      throw new ForbiddenException('No permission');
+    }
+    await this.updatePost(postId, dto);
   }
   
   private async savePost(
@@ -64,6 +88,26 @@ export class PostService {
     post.created = new Date;
     post.usercode = usercode;
     await this.postRepository.save(post);
+  }
+  
+  private async updatePost(
+    postId: number,
+    dto: WritePostDTO
+  ) {
+    await this.postRepository.update({
+      id: postId
+    }, {
+      ...dto
+    })
+  }
+
+  private async getPost(postId: number) {
+    return this.postRepository.findOne({
+      where: {
+        id: postId,
+        deleted: false
+      }
+    });
   }
 
   private async getTotalPosts(category: string): Promise<number> {

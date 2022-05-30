@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user.model';
@@ -16,11 +16,28 @@ export class PostController {
     return this.postService.postList(dto);
   }
 
+  @Get(':postId')
+  viewPost(
+    @GetUser() user: User,
+    @Param('postId') postId: number
+  ) {
+    return this.postService.viewPost(user, postId);
+  }
+
   @Post()
   writePost(
     @GetUser() user: User,
     @Body() dto: WritePostDTO
   ) {
     return this.postService.WritePost(user, dto);
+  }
+
+  @Put(':postId')
+  modifyPost(
+    @GetUser() user: User,
+    @Body() dto: WritePostDTO,
+    @Param('postId') postId: number
+  ) {
+    return this.postService.modifyPost(user, postId, dto);
   }
 }
