@@ -46,12 +46,9 @@ export class PostService {
   }
 
   async viewPost(user: User, postId: number): Promise<Post> {
-    const postInfo = await this.getPost(postId);
-    if (postInfo === undefined) {
-      throw new NotFoundException('Post not found');
-    }
+    const { postInfo, permission } = await this.postCheck(postId, user.usercode);
     const post = plainToClass(Post, postInfo, {excludeExtraneousValues: true});
-    post.permission = postInfo.usercode == user.usercode;
+    post.permission = permission;
     return post;
   }
 
@@ -67,16 +64,25 @@ export class PostService {
     if (!this.categoryList[dto.category]) {
       throw new BadRequestException('Category not found');
     }
-    const postInfo = await this.getPost(postId);
-    if (postInfo === undefined) {
-      throw new NotFoundException('Post not found');
-    }
-    if (postInfo.usercode != user.usercode) {
+    const { permission } = await this.postCheck(postId, user.usercode);
+    if (!permission) {
       throw new ForbiddenException('No permission');
     }
     await this.updatePost(postId, dto);
   }
   
+  async deletePost(user: User, postId: number) {
+    const { permission } = await this.postCheck(postId, user.usercode);
+    if (!permission) {
+      throw new ForbiddenException('No permission');
+    }
+    await this.postRepository.update({
+      id: postId
+    }, {
+      deleted: true
+    });
+  }
+
   private async savePost(
     usercode: number,
     dto: WritePostDTO
@@ -101,13 +107,20 @@ export class PostService {
     })
   }
 
-  private async getPost(postId: number) {
-    return this.postRepository.findOne({
+  private async postCheck(postId: number, usercode: number) {
+    const postInfo = await this.postRepository.findOne({
       where: {
         id: postId,
         deleted: false
       }
     });
+    if (postInfo === undefined) {
+      throw new NotFoundException('Post not found');
+    }
+    return {
+      postInfo,
+      permission: postInfo.usercode == usercode
+    };
   }
 
   private async getTotalPosts(category: string): Promise<number> {
