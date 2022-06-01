@@ -35,7 +35,7 @@ export class CommentEntity {
         nullable: true,
         unsigned: true
     })
-    parentId: number;
+    parentId: number | null;
 
     @Column()
     created: Date;

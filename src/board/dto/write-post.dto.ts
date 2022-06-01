@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class WritePostDTO {
     @IsString()
@@ -8,5 +8,6 @@ export class WritePostDTO {
     title: string;
     
     @IsString()
+    @IsNotEmpty()
     content: string;
 }

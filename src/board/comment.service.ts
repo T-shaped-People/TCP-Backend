@@ -6,6 +6,7 @@ import { PostEntity } from 'src/board/entities/post.entity';
 import { CommentEntity } from 'src/board/entities/comment.entity';
 import { Comment } from 'src/board/comment.model';
 import { plainToClass } from '@nestjs/class-transformer';
+import { WriteCommentDTO } from 'src/board/dto/write-comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -25,6 +26,43 @@ export class CommentService {
         return {
             comments: this.commentTree(commentInfo, 0, user.usercode)
         }
+    }
+
+    async writeComment(user: User, postId: number, dto: WriteCommentDTO) {
+        const { depth, parentId, content } = dto;
+        if (depth > 0 && parentId != 0) {
+            const parentComment = await this.commentRepository.findOne({
+                where: {
+                    postId,
+                    id: parentId
+                }
+            });
+            if (parentComment === undefined || parentComment.depth != depth-1) throw new NotFoundException('Parent comment not found');
+            if (!parentComment.parent) {
+                await this.commentRepository.update({
+                    id: parentId
+                }, {
+                    parent: true
+                })
+            }
+        }
+
+        const comment: CommentEntity = plainToClass(CommentEntity, {
+            usercode: user.usercode,
+            postId,
+            ...dto,
+            parentId: parentId == 0? null: parentId,
+            created: new Date
+        })
+
+        await Promise.all([
+            this.commentRepository.save(comment),
+            this.postRepository.createQueryBuilder('post')
+                .update()
+                .set({commentCnt: () => 'commentCnt + 1'})
+                .where('id = :postId', {postId})
+                .execute()
+        ])
     }
 
     private commentTree(
@@ -50,16 +88,8 @@ export class CommentService {
             }
             if (e.parent) {
                 // 불러오려는 대댓글들만 추출
-                const childList = commentList.filter(
-                    (child) =>
-                        child.depth != depth &&
-                        !(child.depth == depth + 1 && child.parentId != e.id),
-                );
-                const childComment: Comment[] = this.commentTree(
-                    childList,
-                    depth + 1,
-                    usercode,
-                );
+                const childList = commentList.filter(child => child.depth != depth && !(child.depth == depth + 1 && child.parentId != e.id));
+                const childComment: Comment[] = this.commentTree(childList, depth+1, usercode);
                 if (childComment.length) {
                     comment.child = childComment;
                 }
