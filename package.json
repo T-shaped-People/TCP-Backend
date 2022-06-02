@@ -28,7 +28,9 @@
     "@nestjs/jwt": "^8.0.1",
     "@nestjs/passport": "^8.2.1",
     "@nestjs/platform-express": "^8.4.4",
+    "@nestjs/platform-socket.io": "^8.4.5",
     "@nestjs/typeorm": "^8.0.3",
+    "@nestjs/websockets": "^8.4.5",
     "@types/cookie-parser": "^1.4.3",
     "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
@@ -38,7 +40,8 @@
     "passport-jwt": "^4.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.5"
+    "rxjs": "^7.5.5",
+    "typeorm": "^0.3.6"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.5",
@@ -62,7 +65,9 @@
     "ts-loader": "^9.3.0",
     "ts-node": "^10.7.0",
     "tsconfig-paths": "^4.0.0",
-    "typescript": "^4.6.4"
+    "typescript": "^4.6.4",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2"
   },
   "jest": {
     "moduleFileExtensions": [
