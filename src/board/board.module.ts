@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
 import { PostService } from './post.service';
 import { PostController } from './post.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,7 +12,6 @@ import { CommentService } from 'src/board/comment.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([CategoryEntity, PostEntity, CommentEntity]),
-    HttpModule,
     ClassTransformer
   ],
   controllers: [PostController, CommentController],

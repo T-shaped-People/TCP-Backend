@@ -26,6 +26,8 @@ export class CommentService {
                 'c.usercode usercode',
                 'u.nickname nickname',
                 'c.depth depth',
+                'c.parent parent',
+                'c.parentId parentId',
                 'c.created created',
                 'c.content content'
             ])
@@ -46,7 +48,6 @@ export class CommentService {
                     id: parentId
                 }
             });
-            console.log(parentComment)
             if (parentComment === undefined || parentComment.depth != depth-1) throw new NotFoundException('Parent comment not found');
             if (!parentComment.parent) {
                 await this.commentRepository.update({
@@ -111,8 +112,7 @@ export class CommentService {
             if (e.depth != depth) {
                 return [];
             }
-            let comment: Comment;
-            comment = plainToClass(Comment, e, {excludeExtraneousValues: true});
+            let comment: Comment = plainToClass(Comment, e, {excludeExtraneousValues: true});
             // 삭제된 댓글인지 확인
             if (e.deleted) {
                 comment.permission = false;
