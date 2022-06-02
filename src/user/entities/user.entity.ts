@@ -13,7 +13,7 @@ export class UserEntity {
 
     @Column({
         nullable: false,
-        type: 'tinyint'
+        type: 'smallint'
     })
     enrolled: number;
 

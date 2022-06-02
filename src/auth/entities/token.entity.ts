@@ -1,5 +1,6 @@
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, RelationId } from 'typeorm';
+import { CommentEntity } from 'src/board/entities/comment.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('token')
 export class TokenEntity {
@@ -13,10 +14,11 @@ export class TokenEntity {
     })
     valid: boolean;
 
-    @Column({
-        nullable: false,
-        unsigned: true
-    })
+    @ManyToOne(type => UserEntity)
+    @JoinColumn({name: 'usercode'})
+    userFK: UserEntity;
+
+    @RelationId((comment: CommentEntity) => comment.userFK)
     usercode: number;
 
     @Column({nullable: false})

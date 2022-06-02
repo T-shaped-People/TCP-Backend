@@ -19,18 +19,26 @@ export class CommentService {
     ) {}
 
     async viewComment(user: User, postId: number) {
-        const commentInfo = await this.commentRepository.find({
-            where: {
-                postId,
-            },
-        });
+        const commentInfo = await this.commentRepository.createQueryBuilder('c')
+            .select([
+                'c.id id',
+                'c.deleted deleted',
+                'c.usercode usercode',
+                'u.nickname nickname',
+                'c.depth depth',
+                'c.created created',
+                'c.content content'
+            ])
+            .leftJoin('c.userFK', 'u')
+            .where('c.postId = :postId', {postId})
+            .getRawMany();
         return {
             comments: this.commentTree(commentInfo, 0, user.usercode)
         }
     }
 
     async writeComment(user: User, postId: number, dto: WriteCommentDTO) {
-        const { depth, parentId, content } = dto;
+        const { depth, parentId } = dto;
         if (depth > 0 && parentId != 0) {
             const parentComment = await this.commentRepository.findOne({
                 where: {
@@ -38,6 +46,7 @@ export class CommentService {
                     id: parentId
                 }
             });
+            console.log(parentComment)
             if (parentComment === undefined || parentComment.depth != depth-1) throw new NotFoundException('Parent comment not found');
             if (!parentComment.parent) {
                 await this.commentRepository.update({

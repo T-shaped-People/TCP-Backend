@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('comment')
 export class CommentEntity {
@@ -11,9 +12,11 @@ export class CommentEntity {
     })
     deleted: boolean;
     
-    @Column({
-        unsigned: true
-    })
+    @ManyToOne(type => UserEntity)
+    @JoinColumn({name: 'usercode'})
+    userFK: UserEntity;
+
+    @RelationId((comment: CommentEntity) => comment.userFK)
     usercode: number;
     
     @Column({

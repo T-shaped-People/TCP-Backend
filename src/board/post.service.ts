@@ -30,13 +30,14 @@ export class PostService {
     const totalPage = Math.ceil(totalPosts/dto.limit);
 
     const posts: Post[] = (await this.getPostList(startPost, dto.limit, dto.category)).map(post => ({
-      id: post.id,
-      usercode: post.usercode,
-      category: post.category,
-      created: post.created,
-      hit: post.hit,
-      commentCnt: post.commentCnt,
-      title: post.title
+        id: post.id,
+        usercode: post.usercode,
+        nickname: post.nickname,
+        category: post.category,
+        created: post.created,
+        hit: post.hit,
+        commentCnt: post.commentCnt,
+        title: post.title
     }));
 
     return {
@@ -147,30 +148,29 @@ export class PostService {
     limit: number,
     category: string
   ) {
-    let whereOption: {} = {
-      deleted: false
-    };
+    let queryButinder = this.postRepository.createQueryBuilder('p')
+        .select([
+            'p.id id',
+            'p.usercode usercode',
+            'u.nickname nickname',
+            'p.category category',
+            'p.created created',
+            'p.hit hit',
+            'p.commentCnt commentCnt',
+            'p.title title'
+        ])
+        .leftJoin('p.userFK', 'u')
+        .where('p.deleted = 0')
     if (category != 'all') {
       if (category == 'normal') {
-        whereOption = {
-          deleted: false,
-          category: null
-        };
-      } else {
-        whereOption = {
-          deleted: false,
-          category
-        };
+        queryButinder = queryButinder.andWhere('p.category IS NULL');
+    } else {
+        queryButinder = queryButinder.andWhere('p.category = :category', {category});
       }
     }
-
-    return this.postRepository.find({
-      where: whereOption,
-      take: limit,
-      skip: startPost,
-      order: {
-        id: 'DESC'
-      },
-    })
+    return queryButinder.take(limit)
+        .skip(startPost)
+        .orderBy('p.id', 'DESC')
+        .getRawMany();
   }
 }

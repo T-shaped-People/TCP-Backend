@@ -74,10 +74,10 @@ export class UserService {
     }
 
     let userInfo = await this.getByUsercode(resourceData.code);
-    if (userInfo === null) {
+    if (userInfo === undefined) {
       await this.saveUser(resourceData);
       userInfo = await this.getByUsercode(resourceData.code);
-      if (userInfo === null) {
+      if (userInfo === undefined) {
         throw new NotFoundException('User not Found');
       }
     }
@@ -134,7 +134,7 @@ export class UserService {
     await this.userRepository.save(user);
   }
 
-  private async getByUsercode(usercode: number): Promise<UserEntity | null> {
+  private async getByUsercode(usercode: number): Promise<UserEntity | undefined> {
     return this.userRepository.findOne({
       where: {
         usercode

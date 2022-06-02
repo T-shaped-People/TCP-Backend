@@ -11,6 +11,9 @@ export class Comment {
     usercode: number;
 
     @Expose()
+    nickname: string;
+
+    @Expose()
     depth: number;
 
     @Expose()

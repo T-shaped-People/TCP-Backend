@@ -1,4 +1,6 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { UserEntity } from 'src/user/entities/user.entity';
+import { CategoryEntity } from 'src/board/entities/category.entity';
 
 @Entity('post')
 export class PostEntity {
@@ -11,14 +13,18 @@ export class PostEntity {
     })
     deleted: boolean;
     
-    @Column({
-        unsigned: true
-    })
+    @ManyToOne(type => UserEntity)
+    @JoinColumn({name: 'usercode'})
+    userFK: UserEntity;
+
+    @RelationId((post: PostEntity) => post.userFK)
     usercode: number;
     
-    @Column({
-        length: 10
-    })
+    @ManyToOne(type => CategoryEntity)
+    @JoinColumn({name: 'category'})
+    categoryFK: CategoryEntity;
+
+    @RelationId((post: PostEntity) => post.categoryFK)
     category: string;
 
     @Column({
