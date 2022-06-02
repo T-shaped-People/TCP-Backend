@@ -7,6 +7,7 @@ import { CommentEntity } from 'src/board/entities/comment.entity';
 import { Comment } from 'src/board/comment.model';
 import { plainToClass } from '@nestjs/class-transformer';
 import { WriteCommentDTO } from 'src/board/dto/write-comment.dto';
+import { DeleteCommentDTO } from 'src/board/dto/delete-comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -60,6 +61,31 @@ export class CommentService {
             this.postRepository.createQueryBuilder('post')
                 .update()
                 .set({commentCnt: () => 'commentCnt + 1'})
+                .where('id = :postId', {postId})
+                .execute()
+        ])
+    }
+
+    async deleteComment(user: User, dto: DeleteCommentDTO) {
+        const { postId, commentId } = dto;
+        const comment = await this.commentRepository.findOne({
+            where: {
+                postId,
+                id: commentId
+            }
+        });
+        if (comment === undefined) throw new NotFoundException('comment not found');
+        if (comment.usercode != user.usercode) throw new ForbiddenException();
+
+        await Promise.all([
+            this.commentRepository.update({
+                id: commentId
+            }, {
+                deleted: true
+            }),
+            this.postRepository.createQueryBuilder('post')
+                .update()
+                .set({commentCnt: () => 'commentCnt - 1'})
                 .where('id = :postId', {postId})
                 .execute()
         ])
