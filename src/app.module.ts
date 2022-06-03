@@ -7,6 +7,9 @@ import { TeamModule } from 'src/team/team.module';
 import { UserModule } from './user/user.module';
 import { DrawingController } from './drawing/drawing.controller';
 import { DrawingModule } from './drawing/drawing.module';
+import { ChatController } from './chat/chat.controller';
+import { ChatGateway } from './chat.gateway';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -25,8 +28,9 @@ import { DrawingModule } from './drawing/drawing.module';
     UserModule,
     BoardModule,
     TeamModule,
-    DrawingModule],
-  controllers: [],
-  providers: [],
+    DrawingModule,
+    ChatModule],
+  controllers: [ChatController],
+  providers: [ChatGateway],
 })
 export class AppModule {}
