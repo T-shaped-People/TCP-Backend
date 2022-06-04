@@ -12,7 +12,7 @@ export class TeamEntity {
     id: Buffer;
 
     @ManyToOne(type => UserEntity)
-    @JoinColumn({name: 'usercode'})
+    @JoinColumn({name: 'leader'})
     userFK: UserEntity;
 
     @RelationId((team: TeamEntity) => team.userFK)

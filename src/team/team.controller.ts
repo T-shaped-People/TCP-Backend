@@ -8,4 +8,12 @@ import { TeamService } from './team.service';
 @Controller('team')
 export class TeamController {
     constructor(private readonly teamService: TeamService) {}
+
+    @Post()
+    createTeam(
+        @GetUser() user: User,
+        @Body('teamName') teamName: string
+    ) {
+        return this.teamService.createTeam(user, teamName);
+    }
 }
