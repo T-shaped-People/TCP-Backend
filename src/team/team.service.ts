@@ -8,6 +8,7 @@ import { MemberEntity } from 'src/team/entities/member.entity';
 import { TeamUtil } from 'src/team/team.util';
 
 import { v4 as getUUID } from 'uuid';
+import { Team } from 'src/team/team.model';
 
 @Injectable()
 export class TeamService {
@@ -16,11 +17,19 @@ export class TeamService {
         @InjectRepository(MemberEntity) private memberRepository: Repository<MemberEntity>,
         private teamUtil: TeamUtil
     ) {}
+        
+    async getTeam(user: User, teamId: string): Promise<Team> {
+        return this.teamUtil.getTeam(teamId);
+    }
+    
+    async getTeamList(user: User): Promise<Team[]> {
+        return this.teamUtil.getTeamList(user.usercode);
+    }
 
     async createTeam(user: User, teamName: string) {
         const teamInfo = await this.teamRepository.findOne({where:{name:teamName}});
         if (teamInfo) throw new ConflictException('Team name already exists');
-
+        
         const newTeamId = getUUID().replaceAll('-', '');
         const newTeam: TeamEntity = plainToClass(TeamEntity, {
             id: Buffer.from(newTeamId, 'hex'),
@@ -31,6 +40,7 @@ export class TeamService {
             teamFK: Buffer.from(newTeamId, 'hex'),
             userFK: user.usercode
         });
+
         await this.teamRepository.save(newTeam);
         await this.memberRepository.save(newLeader);
         return {
@@ -42,10 +52,12 @@ export class TeamService {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo !== null) throw new ConflictException('Already joined team');
+
         const newMember: MemberEntity = plainToClass(MemberEntity, {
             teamFK: Buffer.from(teamId, 'hex'),
             userFK: user.usercode
         });
+
         await this.memberRepository.save(newMember);
     }
 }
