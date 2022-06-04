@@ -9,11 +9,11 @@ export class MemberEntity {
     id: number;
 
     @ManyToOne(type => TeamEntity)
-    @JoinColumn({name: 'projectId'})
+    @JoinColumn({name: 'teamId'})
     teamFK: TeamEntity;
     
     @RelationId((member: MemberEntity) => member.teamFK)
-    teamId: string;
+    teamId: Buffer;
 
     @ManyToOne(type => UserEntity)
     @JoinColumn({name: 'usercode'})

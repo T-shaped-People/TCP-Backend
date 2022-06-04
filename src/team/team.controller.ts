@@ -16,4 +16,12 @@ export class TeamController {
     ) {
         return this.teamService.createTeam(user, teamName);
     }
+
+    @Post('join')
+    joinTeam(
+        @GetUser() user: User,
+        @Body('teamId') teamId: string
+    ) {
+        return this.teamService.joinTeam(user, teamId);
+    }
 }
