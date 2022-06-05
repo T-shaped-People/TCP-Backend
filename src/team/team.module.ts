@@ -4,13 +4,15 @@ import { ClassTransformer } from '@nestjs/class-transformer';
 import { TeamController } from 'src/team/team.controller';
 import { TeamService } from 'src/team/team.service';
 import { TeamEntity } from 'src/team/entities/team.entity';
+import { TeamUtil } from 'src/team/team.util';
+import { MemberEntity } from 'src/team/entities/member.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TeamEntity]),
+    TypeOrmModule.forFeature([TeamEntity, MemberEntity]),
     ClassTransformer
   ],
   controllers: [TeamController],
-  providers: [TeamService]
+  providers: [TeamService, TeamUtil]
 })
 export class TeamModule {}
