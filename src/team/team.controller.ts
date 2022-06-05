@@ -15,11 +15,8 @@ export class TeamController {
     }
     
     @Get(':teamId')
-    getTeam(
-        @GetUser() user: User,
-        @Param('teamId') teamId: string
-    ) {
-        return this.teamService.getTeam(user, teamId);
+    getTeam(@Param('teamId') teamId: string) {
+        return this.teamService.getTeam(teamId);
     }
 
     @Post()

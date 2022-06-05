@@ -115,7 +115,7 @@ export class PostService {
         deleted: false
       }
     });
-    if (postInfo === undefined) {
+    if (!postInfo) {
       throw new NotFoundException('Post not found');
     }
     return {
@@ -168,8 +168,8 @@ export class PostService {
         queryButinder = queryButinder.andWhere('p.category = :category', {category});
       }
     }
-    return queryButinder.take(limit)
-        .skip(startPost)
+    return queryButinder.limit(limit)
+        .offset(startPost)
         .orderBy('p.id', 'DESC')
         .getRawMany();
   }

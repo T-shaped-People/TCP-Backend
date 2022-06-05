@@ -48,7 +48,7 @@ export class CommentService {
                     id: parentId
                 }
             });
-            if (parentComment === undefined || parentComment.depth != depth-1) throw new NotFoundException('Parent comment not found');
+            if (!parentComment || parentComment.depth != depth-1) throw new NotFoundException('Parent comment not found');
             if (!parentComment.parent) {
                 await this.commentRepository.update({
                     id: parentId
@@ -81,10 +81,11 @@ export class CommentService {
         const comment = await this.commentRepository.findOne({
             where: {
                 postId,
-                id: commentId
+                id: commentId,
+                deleted: false
             }
         });
-        if (comment === undefined) throw new NotFoundException('comment not found');
+        if (!comment) throw new NotFoundException('comment not found');
         if (comment.usercode != user.usercode) throw new ForbiddenException();
 
         await Promise.all([

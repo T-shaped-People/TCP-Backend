@@ -18,7 +18,7 @@ export class TeamService {
         private teamUtil: TeamUtil
     ) {}
         
-    async getTeam(user: User, teamId: string): Promise<Team> {
+    async getTeam(teamId: string): Promise<Team> {
         return this.teamUtil.getTeam(teamId);
     }
     
