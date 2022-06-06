@@ -10,6 +10,7 @@ import { TeamUtil } from 'src/team/team.util';
 import { v4 as getUUID } from 'uuid';
 import { Team } from 'src/team/team';
 import { Member } from 'src/team/member';
+import { DeleteMemberDTO } from 'src/team/dto/delete-member.dto';
 
 @Injectable()
 export class TeamService {
@@ -64,5 +65,44 @@ export class TeamService {
         });
 
         await this.memberRepository.save(newMember);
+    }
+
+    async deleteTeam(user: User, teamId: string) {
+        const teamInfo = await this.teamUtil.getTeam(teamId);
+        if (!teamInfo) throw new NotFoundException('Team not found');
+        if (teamInfo.leader != user.usercode) throw new ForbiddenException('You do not have permission for this team');
+
+        const memberExist = await this.memberRepository.createQueryBuilder('m')
+            .select([
+                'm.usercode usercode'
+            ])
+            .where('m.teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')})
+            .andWhere('m.usercode != :usercode', {usercode: user.usercode})
+            .getRawOne();
+        if (memberExist) throw new ConflictException('Please remove all team members');
+
+        await this.memberRepository.createQueryBuilder()
+            .delete()
+            .where('teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')})
+            .andWhere('usercode = :leader', {leader: user.usercode})
+            .execute();
+        await this.teamRepository.delete({
+            id: Buffer.from(teamId, 'hex')
+        });
+    }
+
+    async deleteMember(user: User, dto: DeleteMemberDTO) {
+        const { teamId, memberCode } = dto;
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, memberCode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not already joined team');
+        if (memberInfo.usercode != memberCode && teamInfo.leader != user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (teamInfo.leader == memberCode) throw new BadRequestException('Unable to delete team leader');
+
+        await this.memberRepository.createQueryBuilder()
+            .delete()
+            .where('teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')})
+            .andWhere('usercode = :memberCode', {memberCode})
+            .execute();
     }
 }

@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/c
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
+import { DeleteMemberDTO } from 'src/team/dto/delete-member.dto';
 import { TeamService } from './team.service';
 
 @UseGuards(JwtAuthGuard)
@@ -38,5 +39,21 @@ export class TeamController {
         @Body('teamId') teamId: string
     ) {
         return this.teamService.joinTeam(user, teamId);
+    }
+    
+    @Delete(':teamId')
+    deleteTeam(
+        @GetUser() user: User,
+        @Param('teamId') teamId: string 
+    ) {
+        return this.teamService.deleteTeam(user, teamId);
+    }
+
+    @Delete(':teamId/:memberCode')
+    deleteMember(
+        @GetUser() user: User,
+        @Param() dto: DeleteMemberDTO
+    ) {
+        return this.teamService.deleteMember(user, dto);
     }
 }
