@@ -4,15 +4,17 @@ import {
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  MessageBody,
 } from '@nestjs/websockets';
 
-import { Server, Socket } from 'socket.io';
+// payload
+type ChatMessage = {
+  context: string,
+  date: string
+}
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
-  // 클라이언트 배열
   chatClients=[];
 
   async handleConnection(client: any): Promise<void> {
@@ -21,7 +23,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.emit('users', this.users);
   }
 
-  async handleDisconnect(): Promise<void> {
+  async handleDisconnect(client: any): Promise<void> {
       this.users--;
       this.server.emit('users', this.users);
   }
@@ -30,7 +32,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   users: number = 0;
   
   @SubscribeMessage('chat')
-  async onPosition(client: any, data): Promise<void> {
+  async onPosition(client: any, data: ChatMessage): Promise<void> {
       client.broadcast.emit('chat', data);
   }
 }

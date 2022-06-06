@@ -7,9 +7,6 @@ import {
     MessageBody,
 } from '@nestjs/websockets';
 
-import { Server, Socket } from 'socket.io';
-
-
 // payload
 type Position = {
     x1: number,
