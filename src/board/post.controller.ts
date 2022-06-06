@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
-import { User } from 'src/auth/user.model';
+import { User } from 'src/auth/user';
 import { postListDTO } from 'src/board/dto/post-list.dto';
 import { WritePostDTO } from 'src/board/dto/write-post.dto';
 import { PostService } from './post.service';

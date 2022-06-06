@@ -13,7 +13,7 @@ import { CreateUserOAuthDTO } from 'src/user/dto/create-user-oauth.dto';
 import { BSMOAuthCodeDTO } from 'src/user/dto/bsm-code-dto';
 import { BSMOAuthResourceDTO } from 'src/user/dto/bsm-resource.dto';
 import { TokenEntity } from 'src/auth/entities/token.entity';
-import { User } from 'src/auth/user.model';
+import { User } from 'src/auth/user';
 
 const { CLIENT_ID, CLIENT_SECRET, SECRET_KEY } = process.env;
 

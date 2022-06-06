@@ -10,14 +10,14 @@ export class MemberEntity {
 
     @ManyToOne(type => TeamEntity)
     @JoinColumn({name: 'teamId'})
-    teamFK: TeamEntity;
+    teamFK: Buffer;
     
     @RelationId((member: MemberEntity) => member.teamFK)
     teamId: Buffer;
 
     @ManyToOne(type => UserEntity)
     @JoinColumn({name: 'usercode'})
-    userFK: UserEntity;
+    userFK: number;
 
     @RelationId((member: MemberEntity) => member.userFK)
     usercode: number;

@@ -13,7 +13,7 @@ export class TeamEntity {
 
     @ManyToOne(type => UserEntity)
     @JoinColumn({name: 'leader'})
-    userFK: UserEntity;
+    userFK: number;
 
     @RelationId((team: TeamEntity) => team.userFK)
     leader: number;

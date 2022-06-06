@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { User } from 'src/auth/user.model';
+import { User } from 'src/auth/user';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,7 +8,8 @@ import { MemberEntity } from 'src/team/entities/member.entity';
 import { TeamUtil } from 'src/team/team.util';
 
 import { v4 as getUUID } from 'uuid';
-import { Team } from 'src/team/team.model';
+import { Team } from 'src/team/team';
+import { Member } from 'src/team/member';
 
 @Injectable()
 export class TeamService {
@@ -23,7 +24,11 @@ export class TeamService {
     }
     
     async getTeamList(user: User): Promise<Team[]> {
-        return this.teamUtil.getTeamList(user.usercode);
+        return this.teamUtil.getTeamListByUsercode(user.usercode);
+    }
+
+    async getTeamMemberList(teamId: string): Promise<Member[]> {
+        return this.teamUtil.getTeamMemberList(teamId);
     }
 
     async createTeam(user: User, teamName: string) {

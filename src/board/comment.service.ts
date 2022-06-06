@@ -1,10 +1,10 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { User } from 'src/auth/user.model';
+import { User } from 'src/auth/user';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostEntity } from 'src/board/entities/post.entity';
 import { CommentEntity } from 'src/board/entities/comment.entity';
-import { Comment } from 'src/board/comment.model';
+import { Comment } from 'src/board/comment';
 import { plainToClass } from '@nestjs/class-transformer';
 import { WriteCommentDTO } from 'src/board/dto/write-comment.dto';
 import { DeleteCommentDTO } from 'src/board/dto/delete-comment.dto';

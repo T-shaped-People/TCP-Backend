@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
-import { User } from 'src/auth/user.model';
+import { User } from 'src/auth/user';
 import { TeamService } from './team.service';
 
 @UseGuards(JwtAuthGuard)
@@ -17,6 +17,11 @@ export class TeamController {
     @Get(':teamId')
     getTeam(@Param('teamId') teamId: string) {
         return this.teamService.getTeam(teamId);
+    }
+
+    @Get(':teamId/member')
+    getTeamMemberList(@Param('teamId') teamId: string) {
+        return this.teamService.getTeamMemberList(teamId);
     }
 
     @Post()

@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { User } from 'src/auth/user.model';
-import { Post } from 'src/board/post.model';
+import { User } from 'src/auth/user';
+import { Post } from 'src/board/post';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
