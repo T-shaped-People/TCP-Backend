@@ -15,14 +15,14 @@ export class PostEntity {
     
     @ManyToOne(type => UserEntity)
     @JoinColumn({name: 'usercode'})
-    userFK: UserEntity;
+    userFK: number;
 
     @RelationId((post: PostEntity) => post.userFK)
     usercode: number;
     
     @ManyToOne(type => CategoryEntity)
     @JoinColumn({name: 'category'})
-    categoryFK: CategoryEntity;
+    categoryFK: string;
 
     @RelationId((post: PostEntity) => post.categoryFK)
     category: string;

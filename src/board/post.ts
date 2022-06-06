@@ -24,10 +24,4 @@ export class Post {
     
     @Expose()
     title: string;
-    
-    @Expose()
-    content?: string;
-    
-    @Expose()
-    permission?: boolean;
 }

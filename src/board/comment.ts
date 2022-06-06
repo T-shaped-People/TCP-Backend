@@ -1,4 +1,5 @@
 import { Expose } from "@nestjs/class-transformer";
+import { DeletedComment } from "src/board/deleted-comment";
 
 export class Comment {
     @Expose()
@@ -24,5 +25,5 @@ export class Comment {
 
     permission: boolean;
 
-    child?: Comment[];
+    child?: (Comment | DeletedComment)[];
 }
