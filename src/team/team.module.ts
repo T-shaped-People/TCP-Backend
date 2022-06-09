@@ -13,6 +13,7 @@ import { MemberEntity } from 'src/team/entities/member.entity';
     ClassTransformer
   ],
   controllers: [TeamController],
-  providers: [TeamService, TeamUtil]
+  providers: [TeamService, TeamUtil],
+  exports: [TeamUtil, TypeOrmModule]
 })
 export class TeamModule {}
