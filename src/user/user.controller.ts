@@ -19,7 +19,7 @@ export class UserController {
   }
 
   @Get('/')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)  
   getUserInfo(@GetUser() user: User) {
     return {
       ...user

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Inject, Get, Param, Post, UseGuards } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { ChatService } from 'src/chat/chat.service';
 import { GetUser } from 'src/auth/getUser.decorator';
@@ -6,11 +6,14 @@ import { User } from 'src/auth/user';
 import { createChatRoomDTO } from 'src/chat/dto/create-chat-room.dto';
 import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
 import { getChatListDTO } from 'src/chat/dto/get-chatlist.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { LoggerService } from '@nestjs/common';
 
 @UseGuards(JwtAuthGuard)
 @Controller('chat')
 export class ChatController {
     constructor(private readonly chatService: ChatService) {}
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService ) {}
 
     @Get(':teamId/:roomId/:startChatId')
     getChatList(
@@ -25,6 +28,8 @@ export class ChatController {
         @GetUser() user: User,
         @Body() dto: createChatRoomDTO
     ) {
+        this.logger.log("생성중입니다..");
+        this.logger.log(dto);
         return this.chatService.createRoom(user, dto);
     }
 

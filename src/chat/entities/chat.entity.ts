@@ -30,6 +30,10 @@ export class ChatEntity {
     @Column()
     date: Date;
 
-    @Column({type: 'mediumtext'})
+    @Column({
+      type: 'text',
+      length: 1000,
+      nullable: false
+    })
     content: string;
 }
