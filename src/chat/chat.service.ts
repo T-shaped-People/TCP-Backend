@@ -24,7 +24,6 @@ export class ChatService {
 
     async getChatList(user: User, dto: getChatListDTO) {
         const { teamId, roomId, startChatId } = dto;
-        
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
@@ -95,4 +94,5 @@ export class ChatService {
         
         await this.chatRepository.save(newChat);
     }
+
 }

@@ -37,7 +37,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   
   @SubscribeMessage('chat')
   async onPosition(client: any, data: ChatMessage): Promise<void> {
-      await this.chatService.createChat(data);
+      // await this.chatService.createChat(data);
       client.broadcast.emit('chat', data);
   }
 }

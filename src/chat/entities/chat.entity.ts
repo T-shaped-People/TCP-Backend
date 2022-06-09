@@ -31,7 +31,6 @@ export class ChatEntity {
     date: Date;
 
     @Column({
-      type: 'text',
       length: 1000,
       nullable: false
     })
