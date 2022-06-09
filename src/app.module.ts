@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 import { AuthModule } from 'src/auth/auth.module';
 import { BoardModule } from 'src/board/board.module';
 import { TeamModule } from 'src/team/team.module';
 import { UserModule } from './user/user.module';
 import { DrawingModule } from './drawing/drawing.module';
 import { ChatModule } from './chat/chat.module';
+
+import * as winston from 'winston';
+import {
+  utilities as nestWinstonModuleUtilities,
+  WinstonModule,
+} from 'nest-winston';
 
 @Module({
   imports: [
@@ -20,6 +25,20 @@ import { ChatModule } from './chat/chat.module';
       synchronize: true,
       logging: true,
       entities: [__dirname + '/**/entities/*.entity.{js,ts}']
+    }),
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          level: process.env.NODE_ENV === 'production' ?
+          'info' : 'silly',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonModuleUtilities.format.nestLike('TCP-api-logger', {
+              prettyPrint: true
+            }),
+          ),
+        }),
+      ],
     }),
     AuthModule,
     UserModule,

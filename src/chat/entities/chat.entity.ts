@@ -1,25 +1,34 @@
 import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, RelationId, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
+import { RoomEntity } from './room.entity';
 
 @Entity('chat')
 export class ChatEntity {
+
     @PrimaryGeneratedColumn('increment')
     @PrimaryColumn({unsigned: true})
-    id: number;
+    chatid: number;
 
     @ManyToOne(type => UserEntity)
     @JoinColumn({name: 'usercode'})
     userFK: number;
 
-    @RelationId((comment: ChatEntity) => comment.userFK)
+    @RelationId((user: ChatEntity) => user.userFK)
     usercode: number;
+
+    @ManyToOne(type => RoomEntity)    
+    @JoinColumn({name: 'id'})
+    roomFK: string;
+
+    @RelationId((room: ChatEntity) => room.roomFK)
+    roomid: string;
     
     @Column()
     date: Date;
 
     @Column({
-        type: 'text',
-        length: 1000
+        length: 1000,
+        // nullable: false
     })
     content: string;
 }

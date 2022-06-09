@@ -6,14 +6,18 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 
+import { ChatService } from './chat.service';
+
 // payload
 type ChatMessage = {
-  context: string,
-  date: string
+  content: string,
+  date: Date
 }
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway(80, { cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+
+  constructor(private readonly chatService: ChatService) {}
 
   chatClients=[];
 
@@ -33,6 +37,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   
   @SubscribeMessage('chat')
   async onPosition(client: any, data: ChatMessage): Promise<void> {
+      await this.chatService.createChat(data);
       client.broadcast.emit('chat', data);
   }
 }
