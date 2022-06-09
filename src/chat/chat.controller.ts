@@ -1,21 +1,43 @@
-import { Controller, Inject, Post, Body} from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { Body, Controller, Inject, Get, Param, Post, UseGuards } from '@nestjs/common';
+import JwtAuthGuard from 'src/auth/auth.guard';
+import { ChatService } from 'src/chat/chat.service';
+import { GetUser } from 'src/auth/getUser.decorator';
+import { User } from 'src/auth/user';
+import { createChatRoomDTO } from 'src/chat/dto/create-chat-room.dto';
+import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
+import { getChatListDTO } from 'src/chat/dto/get-chatlist.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
-import { createRoomDTO } from './dto/create-room.dto';
 
-
+@UseGuards(JwtAuthGuard)
 @Controller('chat')
 export class ChatController {
+    constructor(private readonly chatService: ChatService) {}
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService ) {}
 
-    constructor(private chatService: ChatService,
-        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService ) {}
+    @Get(':teamId/:roomId/:startChatId')
+    getChatList(
+        @GetUser() user: User,
+        @Param() dto: getChatListDTO
+    ) {
+        return this.chatService.getChatList(user, dto);
+    }
 
-    @Post('room/create')
-    async Post(@Body() dto: createRoomDTO): Promise<createRoomDTO> {
+    @Post()
+    createRoom(
+        @GetUser() user: User,
+        @Body() dto: createChatRoomDTO
+    ) {
         this.logger.log("생성중입니다..");
-        this.chatService.createRoom(dto);
         this.logger.log(dto);
-        return dto;
+        return this.chatService.createRoom(user, dto);
+    }
+
+    @Post('message')
+    saveChat(
+        @GetUser() user: User,
+        @Body() dto: SaveChatDTO
+    ) {
+        return this.chatService.saveChat(user, dto);
     }
 }

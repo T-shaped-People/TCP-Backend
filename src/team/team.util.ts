@@ -21,6 +21,8 @@ export class TeamUtil {
                 id: Buffer.from(teamId, 'hex')
             }
         });
+        if (!teamInfo) return null;
+
         return plainToClass(Team, {
             ...teamInfo,
             id: teamInfo.id.toString('hex')
@@ -38,9 +40,7 @@ export class TeamUtil {
             .leftJoin('m.teamFK', 't')
             .andWhere('m.usercode = :usercode', {usercode})
             .getRawMany()
-        if (!teamListInfo) {
-            return [];
-        }
+        if (!teamListInfo) return [];
         return teamListInfo.map(team => plainToClass(Team, {
             ...team,
             id: team.id.toString('hex')
