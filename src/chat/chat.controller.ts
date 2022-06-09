@@ -20,6 +20,8 @@ export class ChatController {
         @GetUser() user: User,
         @Param() dto: getChatListDTO
     ) {
+        this.logger.log('GET : 채팅 리스트 가져오기 실행');
+        this.logger.log(dto);
         return this.chatService.getChatList(user, dto);
     }
 
@@ -28,7 +30,7 @@ export class ChatController {
         @GetUser() user: User,
         @Body() dto: createChatRoomDTO
     ) {
-        this.logger.log("생성중입니다..");
+        this.logger.log('POST : 채팅방 생성 실행');
         this.logger.log(dto);
         return this.chatService.createRoom(user, dto);
     }
@@ -38,6 +40,8 @@ export class ChatController {
         @GetUser() user: User,
         @Body() dto: SaveChatDTO
     ) {
+        this.logger.log('POST : 메세지 저장 실행');
+        this.logger.log(dto);
         return this.chatService.saveChat(user, dto);
     }
 }

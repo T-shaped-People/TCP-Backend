@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConsoleLogger, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -40,12 +40,14 @@ export class UserService {
       clientId: CLIENT_ID,
       clientSecret: CLIENT_SECRET
     };
+
     let tokenData: BSMOAuthCodeDTO;
     try {
       tokenData = plainToClass(BSMOAuthCodeDTO, (await lastValueFrom(this.httpService.post(this.getOAuthTokenURL, (getTokenPayload)))).data);
     } catch (err) {
       if (err.response.status == 404) {
         throw new NotFoundException('Authcode not found');
+        
       }
       console.log(err);
       throw new InternalServerErrorException('OAuth Failed');
@@ -72,16 +74,17 @@ export class UserService {
     if (!resourceData.code) {
       throw new NotFoundException('User not found');
     }
-
+    
     let userInfo = await this.getByUsercode(resourceData.code);
-    if (userInfo === undefined) {
+
+    if (!userInfo) {
       await this.saveUser(resourceData);
       userInfo = await this.getByUsercode(resourceData.code);
-      if (userInfo === undefined) {
+      if (!userInfo) {
         throw new NotFoundException('User not Found');
       }
     }
-
+    console.log(userInfo);
     return this.login(res, userInfo);
   }
 
@@ -112,7 +115,6 @@ export class UserService {
       httpOnly: true,
       maxAge: 24*60*1000*60*60
     });
-
     return {
       token,
       refreshToken: refreshToken
