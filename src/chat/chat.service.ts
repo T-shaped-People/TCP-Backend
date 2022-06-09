@@ -9,7 +9,8 @@ import { TeamUtil } from 'src/team/team.util';
 import { Team } from 'src/team/team';
 
 import { v4 as getUUID } from 'uuid';
-import { createChatRoomDTO } from 'src/chat/dto/delete-member.dto';
+import { createChatRoomDTO } from 'src/chat/dto/create-chat-room.dto';
+import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -42,5 +43,24 @@ export class ChatService {
         return {
             roomId: newRoomId
         }
+    }
+
+    async saveChat(user: User, dto: SaveChatDTO) {
+        const { teamId, roomId, content } = dto;
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        const roomInfo = await this.chatRoomRepository.findOne({where: {id: Buffer.from(roomId, 'hex')}});
+        if (!roomInfo || roomInfo.teamId.toString('hex') != teamId) throw new NotFoundException('Chat room not found');
+        
+        const newChat: ChatEntity = plainToClass(ChatEntity, {
+            roomFK: Buffer.from(roomId, 'hex'),
+            userFK: user.usercode,
+            date: new Date,
+            content
+        });
+        
+        await this.chatRepository.save(newChat);
     }
 }

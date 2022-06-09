@@ -13,19 +13,19 @@ export class ChatEntity {
     })
     deleted: boolean;
     
+    @ManyToOne(type => ChatRoomEntity)
+    @JoinColumn({name: 'roomId'})
+    roomFK: Buffer;
+
+    @RelationId((chat: ChatEntity) => chat.roomFK)
+    roomId: Buffer;
+
     @ManyToOne(type => UserEntity)
     @JoinColumn({name: 'usercode'})
     userFK: number;
 
     @RelationId((chat: ChatEntity) => chat.userFK)
     usercode: number;
-    
-    @ManyToOne(type => ChatRoomEntity)
-    @JoinColumn({name: 'roomId'})
-    roomFK: number;
-
-    @RelationId((chat: ChatEntity) => chat.roomFK)
-    roomId: number;
 
     @Column()
     date: Date;
