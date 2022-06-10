@@ -8,7 +8,7 @@ export class MemberEntity {
     @PrimaryColumn({unsigned: true})
     id: number;
 
-    @ManyToOne(type => TeamEntity)
+    @ManyToOne(type => TeamEntity, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'teamId'})
     teamFK: Buffer;
     

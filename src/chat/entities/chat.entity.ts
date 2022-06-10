@@ -13,7 +13,7 @@ export class ChatEntity {
     })
     deleted: boolean;
     
-    @ManyToOne(type => ChatRoomEntity)
+    @ManyToOne(type => ChatRoomEntity, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'roomId'})
     roomFK: Buffer;
 

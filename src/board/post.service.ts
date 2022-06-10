@@ -34,7 +34,10 @@ export class PostService {
         const totalPage = Math.ceil(totalPosts/dto.limit);
 
         const posts: Post[] = (await this.getPostList(startPost, dto.limit, dto.category))
-            .map(post => plainToClass(Post, post, {excludeExtraneousValues: true}));
+            .map(post => plainToClass(Post, {
+                ...post,
+                category: post.category == null? 'normal': post.category
+            }, {excludeExtraneousValues: true}));
 
         return {
             posts,
@@ -44,7 +47,10 @@ export class PostService {
 
     async viewPost(user: User, postId: number): Promise<ViewPost> {
         const { postInfo, permission } = await this.postCheck(postId, user.usercode);
-        const post = plainToClass(ViewPost, postInfo, {excludeExtraneousValues: true});
+        const post = plainToClass(ViewPost, {
+            ...postInfo,
+            category: postInfo.category == null? 'normal': postInfo.category
+        }, {excludeExtraneousValues: true});
         post.permission = permission;
         return post;
     }
@@ -86,7 +92,7 @@ export class PostService {
     ) {
         const { category, title, content } = dto;
         const post: PostEntity = plainToClass(PostEntity, {
-            categoryFK: category,
+            categoryFK: category == 'normal'? null: category,
             title,
             content,
             created: new Date,
@@ -103,19 +109,28 @@ export class PostService {
         await this.postRepository.update({
             id: postId
         }, {
-            categoryFK: category,
+            categoryFK: category == 'normal'? null: category,
             title,
             content
         })
     }
 
     private async postCheck(postId: number, usercode: number) {
-        const postInfo = await this.postRepository.findOne({
-            where: {
-                id: postId,
-                deleted: false
-            }
-        });
+        const postInfo = await this.postRepository.createQueryBuilder('p')
+            .select([
+                'p.id id',
+                'p.usercode usercode',
+                'u.nickname nickname',
+                'p.category category',
+                'p.created created',
+                'p.hit hit',
+                'p.commentCnt commentCnt',
+                'p.title title',
+                'p.content content'
+            ])
+            .leftJoin('p.userFK', 'u')
+            .where('p.deleted = 0')
+            .getRawOne();
         if (!postInfo) {
             throw new NotFoundException('Post not found');
         }
@@ -127,7 +142,7 @@ export class PostService {
 
     // 총 게시물 갯수 반환
     private async getTotalPosts(category: string): Promise<number> {
-        let queryButinder = await this.postRepository.createQueryBuilder('post')
+        let queryButinder = this.postRepository.createQueryBuilder('post')
             .select('COUNT(id) total')
             .where('deleted=0')
         // 카테고리 분류

@@ -11,7 +11,7 @@ export class ChatRoomEntity {
     })
     id: Buffer;
 
-    @ManyToOne(type => TeamEntity)
+    @ManyToOne(type => TeamEntity, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'teamId'})
     teamFK: Buffer;
     
