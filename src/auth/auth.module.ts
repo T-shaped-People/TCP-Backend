@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokenEntity } from 'src/auth/entities/token.entity';
+import { WSAuthUtil } from 'src/auth/WS-auth.util';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { JwtStrategy } from './jwt.strategy';
 
@@ -14,6 +15,7 @@ import { JwtStrategy } from './jwt.strategy';
             secret: process.env.SECRET_KEY
         })
     ],
-    providers: [JwtStrategy]
+    providers: [JwtStrategy, WSAuthUtil],
+    exports: [WSAuthUtil, JwtModule]
 })
 export class AuthModule {}

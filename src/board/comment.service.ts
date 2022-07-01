@@ -133,7 +133,12 @@ export class CommentService {
             const comment: (Comment | DeletedComment) = plainToClass(
                 // 삭제된 댓글인지 확인
                 e.deleted? DeletedComment: Comment,
-                e, {excludeExtraneousValues: true}
+                {
+                    ...e,
+                    permission: e.usercode == usercode
+                }, {
+                    excludeExtraneousValues: true
+                }
             );
             if (e.parent) {
                 // 불러오려는 대댓글들만 추출

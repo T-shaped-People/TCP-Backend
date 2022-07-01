@@ -23,6 +23,7 @@ export class Comment {
     @Expose()
     content: string;
 
+    @Expose()
     permission: boolean;
 
     child?: (Comment | DeletedComment)[];
