@@ -16,6 +16,10 @@ import { JwtStrategy } from './jwt.strategy';
         })
     ],
     providers: [JwtStrategy, WSAuthUtil],
-    exports: [WSAuthUtil, JwtModule]
+    exports: [
+        WSAuthUtil,
+        JwtModule,
+        TypeOrmModule
+    ]
 })
 export class AuthModule {}

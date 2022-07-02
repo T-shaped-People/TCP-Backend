@@ -23,7 +23,7 @@ export class WSAuthUtil {
         }
     } = {};
 
-    async authClient(client: Socket): Promise<User | null> {
+    async authClient(client: Socket): Promise<User | false> {
         // 만약 클라이언트가 이미 인증되었다면
         if (this.clients[client.id]) {
             return this.clients[client.id].user;
@@ -44,20 +44,20 @@ export class WSAuthUtil {
             .find(cookie => cookie.startsWith('refreshToken='))
             ?.split('=')[1];
         if (!refreshToken) {
-            return null;
+            return false;
         }
 
         try {
             refreshToken = this.jwtService.verify(refreshToken).refreshToken;
         } catch (error) {
-            return null;
+            return false;
         }
 
         const tokenInfo = await this.tokenRepository.findOne({where: {token: refreshToken}});
-        if (tokenInfo === null) return null;
+        if (!tokenInfo) return false;
 
         const userInfo = await this.userRepository.findOne({where: {usercode: tokenInfo.usercode}});
-        if (userInfo === null) return null;
+        if (!userInfo) return false;
 
         // 인증이 성공되었으면
         return plainToClass(User, userInfo, {excludeExtraneousValues: true});

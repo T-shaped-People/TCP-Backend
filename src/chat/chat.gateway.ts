@@ -1,10 +1,8 @@
-import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { userInfo } from 'os';
+import { Server, Socket } from 'socket.io';
+import { User } from 'src/auth/user';
+import { WSAuthUtil } from 'src/auth/WS-auth.util';
 
 import { ChatService } from './chat.service';
 
@@ -14,30 +12,56 @@ type ChatMessage = {
   date: Date
 }
 
-@WebSocketGateway(80, { cors: true })
+@WebSocketGateway({
+    namespace: 'chat',
+    cors: true
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
-  constructor(private readonly chatService: ChatService) {}
+    constructor(
+        private readonly chatService: ChatService,
+        private wsAuthUtil: WSAuthUtil
+    ) {}
 
-  chatClients=[];
+    @WebSocketServer()
+    server: Server;
 
-  async handleConnection(client: any): Promise<void> {
-      this.users++;
-      this.chatClients.push(client);
-      this.server.emit('users', this.users);
-  }
+    private clients: {
+        [index: string]: {
+            user: User,
+            socket: Socket
+        }
+    } = {};
 
-  async handleDisconnect(client: any): Promise<void> {
-      this.users--;
-      this.server.emit('users', this.users);
-  }
+    async handleConnection(client: Socket): Promise<void> {
+        const userInfo = await this.wsAuthUtil.authClient(client);
+        // 인증에 실패했다면
+        if (!userInfo) {
+            client.disconnect();
+            return;
+        }
+        this.clients[client.id] = {
+            user: userInfo,
+            socket: client
+        };
+        
+        this.server.emit('chat:user-join', {
+            usercode: userInfo.usercode,
+            nickname: userInfo.nickname
+        });
+    }
 
-  @WebSocketServer() server: any;
-  users: number = 0;
-  
-  @SubscribeMessage('chat')
-  async onPosition(client: any, data: ChatMessage): Promise<void> {
-      // await this.chatService.createChat(data);
-      client.broadcast.emit('chat', data);
-  }
+    async handleDisconnect(client: Socket): Promise<void> {
+        const userInfo = this.clients[client.id]?.user;
+        if (!userInfo) return;
+        this.server.emit('chat:user-exit', {
+            usercode: userInfo.usercode
+        });
+    }
+    
+    @SubscribeMessage('chat')
+    async onPosition(client: Socket, data: ChatMessage): Promise<void> {
+        // await this.chatService.createChat(data);
+        client.broadcast.emit('chat', data);
+    }
 }
