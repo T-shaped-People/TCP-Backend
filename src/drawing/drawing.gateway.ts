@@ -16,7 +16,10 @@ type Position = {
     color: string
 }
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({
+    cors: true,
+    transports: ['websocket']
+})
 export class DrawingGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // 클라이언트 배열

@@ -33,10 +33,10 @@ export class UserService {
     res: Response,
     dto: CreateUserOAuthDTO
   ) {
-    const { authcode } = dto;
+    const { code } = dto;
 
     const getTokenPayload = {
-      authcode,
+      authcode: code,
       clientId: CLIENT_ID,
       clientSecret: CLIENT_SECRET
     };
@@ -47,7 +47,6 @@ export class UserService {
     } catch (err) {
       if (err.response.status == 404) {
         throw new NotFoundException('Authcode not found');
-        
       }
       console.log(err);
       throw new InternalServerErrorException('OAuth Failed');
@@ -84,8 +83,8 @@ export class UserService {
         throw new NotFoundException('User not Found');
       }
     }
-    console.log(userInfo);
-    return this.login(res, userInfo);
+    await this.login(res, userInfo);
+    res.redirect('http://localhost:3001/calendar');
   }
 
   private async login(

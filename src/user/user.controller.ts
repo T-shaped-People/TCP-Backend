@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res, UseGuards, Inject } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards, Inject, Query } from '@nestjs/common';
 import { Response } from 'express';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
@@ -13,10 +13,10 @@ export class UserController {
   constructor(private readonly userService: UserService, 
                 @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
-  @Post('oauth/bsm')
+  @Get('oauth/bsm')
   BSMOAuth(
     @Res({passthrough: true}) res: Response,
-    @Body() dto: CreateUserOAuthDTO
+    @Query() dto: CreateUserOAuthDTO
   ) {
     this.logger.log('POST : 로그인 시작')
     this.logger.log(dto);
