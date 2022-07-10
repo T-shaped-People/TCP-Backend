@@ -34,14 +34,4 @@ export class ChatController {
         this.logger.log(dto);
         return this.chatService.createRoom(user, dto);
     }
-
-    @Post('message')
-    saveChat(
-        @GetUser() user: User,
-        @Body() dto: SaveChatDTO
-    ) {
-        this.logger.log('POST : 메세지 저장 실행');
-        this.logger.log(dto);
-        return this.chatService.saveChat(user, dto);
-    }
 }

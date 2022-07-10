@@ -76,8 +76,9 @@ export class ChatService {
         }
     }
 
-    async saveChat(user: User, dto: SaveChatDTO) {
+    async saveChat(user: User, dto: SaveChatDTO): Promise<Chat> {
         const { teamId, roomId, content } = dto;
+        console.log(user)
 
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
@@ -85,14 +86,23 @@ export class ChatService {
         const roomInfo = await this.chatRoomRepository.findOne({where: {id: Buffer.from(roomId, 'hex')}});
         if (!roomInfo || roomInfo.teamId.toString('hex') != teamId) throw new NotFoundException('Chat room not found');
         
-        const newChat: ChatEntity = plainToClass(ChatEntity, {
-            roomFK: Buffer.from(roomId, 'hex'),
-            userFK: user.usercode,
-            date: new Date,
-            content
-        });
-        
-        await this.chatRepository.save(newChat);
-    }
+        const newChat = await this.chatRepository.save(
+            plainToClass(ChatEntity, {
+                roomFK: Buffer.from(roomId, 'hex'),
+                userFK: user.usercode,
+                date: new Date,
+                content
+            })
+        );
 
+        return {
+            ...plainToClass(Chat, {
+                    ...newChat,
+                    ...user
+                }, {
+                    excludeExtraneousValues: true
+                }),
+            roomId: dto.roomId
+        };
+    }
 }

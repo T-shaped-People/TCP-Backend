@@ -1,16 +1,10 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { userInfo } from 'os';
 import { Server, Socket } from 'socket.io';
 import { User } from 'src/auth/user';
 import { WSAuthUtil } from 'src/auth/WS-auth.util';
+import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
 
 import { ChatService } from './chat.service';
-
-// payload
-type ChatMessage = {
-  content: string,
-  date: Date
-}
 
 @WebSocketGateway({
     namespace: 'chat',
@@ -37,6 +31,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const userInfo = await this.wsAuthUtil.authClient(client);
         // 인증에 실패했다면
         if (!userInfo) {
+            client.emit('error', 'Unauthorized');
             client.disconnect();
             return;
         }
@@ -57,11 +52,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server.emit('chat:user-exit', {
             usercode: userInfo.usercode
         });
+        delete this.clients[client.id];
     }
     
     @SubscribeMessage('chat')
-    async onPosition(client: Socket, data: ChatMessage): Promise<void> {
-        // await this.chatService.createChat(data);
-        client.broadcast.emit('chat', data);
+    async onPosition(client: Socket, data: SaveChatDTO): Promise<void> {
+        const userInfo = this.clients[client.id]?.user;
+        if (!userInfo) return;
+        const chatInfo = await this.chatService.saveChat(userInfo, data);
+        this.server.emit('chat', chatInfo);
     }
 }
