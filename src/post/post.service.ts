@@ -1,14 +1,14 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { User } from 'src/auth/user';
-import { Post } from 'src/board/post';
+import { PostDto } from 'src/post/dto/post.dto';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
-import { PostEntity } from './entities/post.entity';
-import { WritePostDTO } from 'src/board/dto/write-post.dto';
-import { postListDTO } from 'src/board/dto/post-list.dto';
-import { ViewPost } from 'src/board/view-post';
+import { PostEntity } from '../post/entities/post.entity';
+import { WritePostDTO } from 'src/post/dto/request/write-post.dto';
+import { postListDTO } from 'src/post/dto/request/post-list.dto';
+import { ViewPostDto } from 'src/post/dto/view-post.dto';
 
 @Injectable()
 export class PostService {
@@ -33,10 +33,10 @@ export class PostService {
         // 총 페이지 수
         const totalPage = Math.ceil(totalPosts/dto.limit);
 
-        const posts: Post[] = (await this.getPostList(startPost, dto.limit, dto.category))
-            .map(post => plainToClass(Post, {
+        const posts: PostDto[] = (await this.getPostList(startPost, dto.limit, dto.category))
+            .map(post => plainToClass(PostDto, {
                 ...post,
-                category: post.category == null? 'normal': post.category
+                category: post.category === null? 'normal': post.category
             }, {excludeExtraneousValues: true}));
 
         return {
@@ -45,11 +45,11 @@ export class PostService {
         };
     }
 
-    async viewPost(user: User, postId: number): Promise<ViewPost> {
+    async viewPost(user: User, postId: number): Promise<ViewPostDto> {
         const { postInfo, permission } = await this.postCheck(postId, user.usercode);
-        const post = plainToClass(ViewPost, {
+        const post = plainToClass(ViewPostDto, {
             ...postInfo,
-            category: postInfo.category == null? 'normal': postInfo.category
+            category: postInfo.category === null? 'normal': postInfo.category
         }, {excludeExtraneousValues: true});
         post.permission = permission;
         return post;
@@ -92,7 +92,7 @@ export class PostService {
     ) {
         const { category, title, content } = dto;
         const post: PostEntity = plainToClass(PostEntity, {
-            categoryFK: category == 'normal'? null: category,
+            categoryFK: category === 'normal'? null: category,
             title,
             content,
             created: new Date,
@@ -109,7 +109,7 @@ export class PostService {
         await this.postRepository.update({
             id: postId
         }, {
-            categoryFK: category == 'normal'? null: category,
+            categoryFK: category === 'normal'? null: category,
             title,
             content
         })
@@ -136,7 +136,7 @@ export class PostService {
         }
         return {
             postInfo,
-            permission: postInfo.usercode == usercode
+            permission: postInfo.usercode === usercode
         };
     }
 
@@ -146,8 +146,8 @@ export class PostService {
             .select('COUNT(id) total')
             .where('deleted=0')
         // 카테고리 분류
-        if (category != 'all') {
-            if (category == 'normal') {
+        if (category !== 'all') {
+            if (category === 'normal') {
                 queryButinder = queryButinder.where('category IS NULL');
             } else {
                 queryButinder = queryButinder.where('category = :category', {category});
@@ -155,7 +155,7 @@ export class PostService {
         }
         const result = await queryButinder.getRawOne();
         // 에러 체크
-        if (typeof result != 'object') {
+        if (typeof result !== 'object') {
             console.error(`Get total post Exception: ${result}`);
             throw new InternalServerErrorException();
         }
@@ -181,8 +181,8 @@ export class PostService {
             .leftJoin('p.userFK', 'u')
             .where('p.deleted = 0')
         // 카테고리 분류
-        if (category != 'all') {
-            if (category == 'normal') {
+        if (category !== 'all') {
+            if (category === 'normal') {
                 queryButinder = queryButinder.andWhere('p.category IS NULL');
             } else {
                 queryButinder = queryButinder.andWhere('p.category = :category', {category});

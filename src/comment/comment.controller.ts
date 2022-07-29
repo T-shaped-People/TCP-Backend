@@ -2,8 +2,8 @@ import { Body, Controller, Delete, Get, Param, Post, UseGuards, Inject } from '@
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
-import { DeleteCommentDTO } from 'src/board/dto/delete-comment.dto';
-import { WriteCommentDTO } from 'src/board/dto/write-comment.dto';
+import { DeleteCommentDTO } from 'src/comment/dto/request/delete-comment.dto';
+import { WriteCommentDTO } from 'src/comment/dto/request/write-comment.dto';
 import { CommentService } from './comment.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';

@@ -20,7 +20,7 @@ async function bootstrap() {
   );
   app.use(cookieParser());
   app.setGlobalPrefix('api');
-  await app.listen(3000);
+  await app.listen(process.env.SERVER_PORT);
 }
 
 bootstrap();

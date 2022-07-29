@@ -70,14 +70,14 @@ export class TeamService {
     async deleteTeam(user: User, teamId: string) {
         const teamInfo = await this.teamUtil.getTeam(teamId);
         if (!teamInfo) throw new NotFoundException('Team not found');
-        if (teamInfo.leader != user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (teamInfo.leader !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
 
         const memberExist = await this.memberRepository.createQueryBuilder('m')
             .select([
                 'm.usercode usercode'
             ])
             .where('m.teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')})
-            .andWhere('m.usercode != :usercode', {usercode: user.usercode})
+            .andWhere('m.usercode !== :usercode', {usercode: user.usercode})
             .getRawOne();
         if (memberExist) throw new ConflictException('Please remove all team members');
 
@@ -96,8 +96,8 @@ export class TeamService {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, memberCode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not already joined team');
-        if (memberInfo.usercode != memberCode && teamInfo.leader != user.usercode) throw new ForbiddenException('You do not have permission for this team');
-        if (teamInfo.leader == memberCode) throw new BadRequestException('Unable to delete team leader');
+        if (memberInfo.usercode !== memberCode && teamInfo.leader !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (teamInfo.leader === memberCode) throw new BadRequestException('Unable to delete team leader');
 
         await this.memberRepository.createQueryBuilder()
             .delete()

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
-import { BoardModule } from 'src/board/board.module';
+import { PostModule } from 'src/post/post.module';
+import { CommentModule } from 'src/comment/comment.module';
 import { TeamModule } from 'src/team/team.module';
 import { UserModule } from './user/user.module';
 import { DrawingModule } from './drawing/drawing.module';
@@ -42,7 +43,8 @@ import {
     }),
     AuthModule,
     UserModule,
-    BoardModule,
+    PostModule,
+    CommentModule,
     TeamModule,
     DrawingModule,
     ChatModule],

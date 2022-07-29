@@ -1,7 +1,8 @@
 import { Expose } from "@nestjs/class-transformer";
-import { Post } from "src/board/post";
+import { PostDto } from "src/post/dto/post.dto";
 
-export class ViewPost extends Post {
+export class ViewPostDto extends PostDto {
+
     @Expose()
     content?: string;
     

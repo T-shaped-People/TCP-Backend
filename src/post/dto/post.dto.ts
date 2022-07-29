@@ -1,6 +1,7 @@
 import { Expose } from "@nestjs/class-transformer";
 
-export class Post {
+export class PostDto {
+    
     @Expose()
     id: number;
 

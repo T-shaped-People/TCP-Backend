@@ -45,7 +45,7 @@ export class UserService {
     try {
       tokenData = plainToClass(BSMOAuthCodeDTO, (await lastValueFrom(this.httpService.post(this.getOAuthTokenURL, (getTokenPayload)))).data);
     } catch (err) {
-      if (err.response.status == 404) {
+      if (err.response.status === 404) {
         throw new NotFoundException('Authcode not found');
       }
       console.log(err);
@@ -64,7 +64,7 @@ export class UserService {
     try {
       resourceData = plainToClass(BSMOAuthResourceDTO, (await lastValueFrom(this.httpService.post(this.getOAuthResourceURL, (getResourcePayload)))).data.user);
     } catch (err) {
-      if (err.response.status == 404) {
+      if (err.response.status === 404) {
         throw new NotFoundException('User not found');
       }
       console.log(err);

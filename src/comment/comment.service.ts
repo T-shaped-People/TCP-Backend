@@ -1,14 +1,14 @@
-import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from 'src/auth/user';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PostEntity } from 'src/board/entities/post.entity';
-import { CommentEntity } from 'src/board/entities/comment.entity';
-import { Comment } from 'src/board/comment';
+import { PostEntity } from 'src/post/entities/post.entity';
+import { CommentEntity } from 'src/comment/entities/comment.entity';
+import { Comment } from 'src/comment/comment';
 import { plainToClass } from '@nestjs/class-transformer';
-import { WriteCommentDTO } from 'src/board/dto/write-comment.dto';
-import { DeleteCommentDTO } from 'src/board/dto/delete-comment.dto';
-import { DeletedComment } from 'src/board/deleted-comment';
+import { WriteCommentDTO } from 'src/comment/dto/request/write-comment.dto';
+import { DeleteCommentDTO } from 'src/comment/dto/request/delete-comment.dto';
+import { DeletedComment } from 'src/comment/dto/deleted-comment';
 
 @Injectable()
 export class CommentService {
@@ -43,7 +43,7 @@ export class CommentService {
     async writeComment(user: User, postId: number, dto: WriteCommentDTO) {
         const { depth, parentId } = dto;
         // 작성하려는 댓글이 대댓글 이라면
-        if (depth > 0 || parentId != 0) {
+        if (depth > 0 || parentId !== 0) {
             // 대댓글이면 부모 댓글이 이미 게시글과 연결되어있기 때문에
             // 존재하는 게시글인지 굳이 확인할 이유가 없음
             const parentComment = await this.commentRepository.findOne({
@@ -52,7 +52,7 @@ export class CommentService {
                     id: parentId
                 }
             });
-            if (!parentComment || parentComment.depth != depth-1) throw new NotFoundException('Parent comment not found');
+            if (!parentComment || parentComment.depth !== depth-1) throw new NotFoundException('Parent comment not found');
             // 부모 댓글로 설정되어 있지 않으면 설정함
             if (!parentComment.parent) {
                 await this.commentRepository.update({
@@ -76,7 +76,7 @@ export class CommentService {
             userFK: user.usercode,
             postFK: postId,
             ...dto,
-            parentId: parentId == 0? null: parentId,
+            parentId: parentId === 0? null: parentId,
             created: new Date
         })
 
@@ -102,7 +102,7 @@ export class CommentService {
             }
         });
         if (!comment) throw new NotFoundException('comment not found');
-        if (comment.usercode != user.usercode) throw new ForbiddenException();
+        if (comment.usercode !== user.usercode) throw new ForbiddenException();
 
         await Promise.all([
             this.commentRepository.update({
@@ -127,7 +127,7 @@ export class CommentService {
         let result: (Comment | DeletedComment)[] = [];
         commentList.forEach((e) => {
             // 대댓글의 깊이가 불러오려는 현재 깊이와 같은지 확인
-            if (e.depth != depth) {
+            if (e.depth !== depth) {
                 return [];
             }
             const comment: (Comment | DeletedComment) = plainToClass(
@@ -135,14 +135,14 @@ export class CommentService {
                 e.deleted? DeletedComment: Comment,
                 {
                     ...e,
-                    permission: e.usercode == usercode
+                    permission: e.usercode === usercode
                 }, {
                     excludeExtraneousValues: true
                 }
             );
             if (e.parent) {
                 // 불러오려는 대댓글들만 추출
-                const childList = commentList.filter(child => child.depth != depth && !(child.depth == depth + 1 && child.parentId != e.id));
+                const childList = commentList.filter(child => child.depth !== depth && !(child.depth === depth + 1 && child.parentId !== e.id));
                 const childComment: (Comment | DeletedComment)[] = this.commentTree(childList, depth+1, usercode);
                 if (childComment.length) {
                     comment.child = childComment;

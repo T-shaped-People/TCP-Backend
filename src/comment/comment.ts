@@ -1,5 +1,5 @@
 import { Expose } from "@nestjs/class-transformer";
-import { DeletedComment } from "src/board/deleted-comment";
+import { DeletedComment } from "src/comment/dto/deleted-comment";
 
 export class Comment {
     @Expose()

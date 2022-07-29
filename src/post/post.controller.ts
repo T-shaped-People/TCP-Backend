@@ -2,8 +2,8 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } fro
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
-import { postListDTO } from 'src/board/dto/post-list.dto';
-import { WritePostDTO } from 'src/board/dto/write-post.dto';
+import { postListDTO } from 'src/post/dto/request/post-list.dto';
+import { WritePostDTO } from 'src/post/dto/request/write-post.dto';
 import { PostService } from './post.service';
 
 @UseGuards(JwtAuthGuard)

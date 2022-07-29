@@ -28,7 +28,7 @@ export class ChatService {
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
         const roomInfo = await this.chatRoomRepository.findOne({where: {id: Buffer.from(roomId, 'hex')}});
-        if (!roomInfo || roomInfo.teamId.toString('hex') != teamId) throw new NotFoundException('Chat room not found');
+        if (!roomInfo || roomInfo.teamId.toString('hex') !== teamId) throw new NotFoundException('Chat room not found');
 
         let queryBuilder = this.chatRepository.createQueryBuilder('c')
             .select([
@@ -43,7 +43,7 @@ export class ChatService {
             .limit(15)
             .orderBy('c.id', 'DESC')
             .leftJoin('c.userFK', 'u');
-        if (startChatId != 0) {
+        if (startChatId !== 0) {
             queryBuilder = queryBuilder.andWhere('c.id < :startChatId', {startChatId});
         }
 
@@ -57,7 +57,7 @@ export class ChatService {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
-        if (memberInfo.usercode != user.usercode && teamInfo.leader != user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (memberInfo.usercode !== user.usercode && teamInfo.leader !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
 
         const roomInfo = await this.chatRoomRepository.findOne({where:{title: roomTitle}});
         if (roomInfo) throw new ConflictException('Chat room title already exists');
@@ -78,13 +78,12 @@ export class ChatService {
 
     async saveChat(user: User, dto: SaveChatDTO): Promise<Chat> {
         const { teamId, roomId, content } = dto;
-        console.log(user)
 
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
         const roomInfo = await this.chatRoomRepository.findOne({where: {id: Buffer.from(roomId, 'hex')}});
-        if (!roomInfo || roomInfo.teamId.toString('hex') != teamId) throw new NotFoundException('Chat room not found');
+        if (!roomInfo || roomInfo.teamId.toString('hex') !== teamId) throw new NotFoundException('Chat room not found');
         
         const newChat = await this.chatRepository.save(
             plainToClass(ChatEntity, {
