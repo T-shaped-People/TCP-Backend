@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { ChatRoomEntity } from 'src/chat/entities/chat-room.entity';
 
 @Entity('chat')
 export class ChatEntity {
+
     @PrimaryGeneratedColumn('increment')
     @PrimaryColumn({unsigned: true})
     id: number;
@@ -11,28 +12,28 @@ export class ChatEntity {
     @Column({
         default: false
     })
-    deleted: boolean;
+    isDeleted: boolean;
     
-    @ManyToOne(type => ChatRoomEntity, {onDelete: 'CASCADE'})
+    @ManyToOne(type => ChatRoomEntity, room => room.id, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'roomId'})
-    roomFK: Buffer;
+    room: ChatRoomEntity;
 
-    @RelationId((chat: ChatEntity) => chat.roomFK)
-    roomId: Buffer;
+    @Column({nullable: false, length: 32})
+    roomId: string;
 
-    @ManyToOne(type => UserEntity)
+    @ManyToOne(type => UserEntity, user => user.usercode)
     @JoinColumn({name: 'usercode'})
-    userFK: number;
+    user: UserEntity;
 
-    @RelationId((chat: ChatEntity) => chat.userFK)
+    @Column({nullable: false, unsigned: true})
     usercode: number;
 
-    @Column()
-    date: Date;
-
     @Column({
-      length: 1000,
-      nullable: false
+        length: 1000,
+        nullable: false
     })
     content: string;
+
+    @CreateDateColumn()
+    createdAt: Date
 }

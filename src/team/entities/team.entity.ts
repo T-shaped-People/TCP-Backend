@@ -1,25 +1,24 @@
-import { Entity, Column, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, PrimaryColumn, RelationId, CreateDateColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('team')
 export class TeamEntity {
-    @Column({
-        type: 'binary',
-        length: 16,
-        primary: true,
-        nullable: false
-    })
-    id: Buffer;
 
-    @ManyToOne(type => UserEntity)
+    @PrimaryColumn({length: 32})
+    id: string;
+
+    @ManyToOne(type => UserEntity, user => user.usercode)
     @JoinColumn({name: 'leader'})
-    userFK: number;
+    leader: UserEntity;
 
-    @RelationId((team: TeamEntity) => team.userFK)
-    leader: number;
+    @RelationId((team: TeamEntity) => team.leader)
+    leaderId: number
     
     @Column({
         length: 32
     })
     name: string;
+
+    @CreateDateColumn()
+    createdAt: Date
 }

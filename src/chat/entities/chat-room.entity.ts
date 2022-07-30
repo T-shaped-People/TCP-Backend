@@ -1,26 +1,22 @@
-import { Entity, Column, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryColumn, CreateDateColumn, JoinColumn } from 'typeorm';
 import { TeamEntity } from 'src/team/entities/team.entity';
 
 @Entity('chat_room')
 export class ChatRoomEntity {
-    @Column({
-        type: 'binary',
-        length: 16,
-        primary: true,
-        nullable: false
-    })
-    id: Buffer;
 
-    @ManyToOne(type => TeamEntity, {onDelete: 'CASCADE'})
+    @PrimaryColumn({length: 32})
+    id: string;
+
+    @ManyToOne(type => TeamEntity, team => team.id, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'teamId'})
-    teamFK: Buffer;
-    
-    @RelationId((chatRoom: ChatRoomEntity) => chatRoom.teamFK)
-    teamId: Buffer;
+    team: TeamEntity;
 
-    @Column()
-    date: Date;
+    @Column({nullable: false, length: 32})
+    teamId: string;
 
     @Column({type: 'tinytext'})
     title: string;
+    
+    @CreateDateColumn()
+    createdAt: Date
 }

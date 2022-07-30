@@ -5,7 +5,7 @@ export class Team {
     id: string;
 
     @Expose()
-    leader: number;
+    leaderId: number;
 
     @Expose()
     name: string;

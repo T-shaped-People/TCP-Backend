@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { User } from 'src/auth/user';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { TeamEntity } from 'src/team/entities/team.entity';
 import { MemberEntity } from 'src/team/entities/member.entity';
 import { TeamUtil } from 'src/team/team.util';
@@ -33,18 +33,22 @@ export class TeamService {
     }
 
     async createTeam(user: User, teamName: string) {
-        const teamInfo = await this.teamRepository.findOne({where:{name:teamName}});
+        const teamInfo = await this.teamRepository.findOne({
+            where: {
+                name: teamName
+            }
+        });
         if (teamInfo) throw new ConflictException('Team name already exists');
         
         const newTeamId = getUUID().replaceAll('-', '');
         const newTeam: TeamEntity = plainToClass(TeamEntity, {
-            id: Buffer.from(newTeamId, 'hex'),
-            userFK: user.usercode,
+            id: newTeamId,
+            leader: user,
             name: teamName
         });
         const newLeader: MemberEntity = plainToClass(MemberEntity, {
-            teamFK: Buffer.from(newTeamId, 'hex'),
-            userFK: user.usercode
+            team: newTeam,
+            user: user
         });
 
         await this.teamRepository.save(newTeam);
@@ -60,8 +64,8 @@ export class TeamService {
         if (memberInfo !== null) throw new ConflictException('Already joined team');
 
         const newMember: MemberEntity = plainToClass(MemberEntity, {
-            teamFK: Buffer.from(teamId, 'hex'),
-            userFK: user.usercode
+            team: teamInfo,
+            user
         });
 
         await this.memberRepository.save(newMember);
@@ -70,24 +74,24 @@ export class TeamService {
     async deleteTeam(user: User, teamId: string) {
         const teamInfo = await this.teamUtil.getTeam(teamId);
         if (!teamInfo) throw new NotFoundException('Team not found');
-        if (teamInfo.leader !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (teamInfo.leaderId !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
 
         const memberExist = await this.memberRepository.createQueryBuilder('m')
             .select([
                 'm.usercode usercode'
             ])
-            .where('m.teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')})
-            .andWhere('m.usercode !== :usercode', {usercode: user.usercode})
+            .where('m.teamId = :teamId', {teamId: teamId})
+            .andWhere('m.usercode != :usercode', {usercode: user.usercode})
             .getRawOne();
         if (memberExist) throw new ConflictException('Please remove all team members');
 
         await this.memberRepository.createQueryBuilder()
             .delete()
-            .where('teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')})
+            .where('teamId = :teamId', {teamId: teamId})
             .andWhere('usercode = :leader', {leader: user.usercode})
             .execute();
         await this.teamRepository.delete({
-            id: Buffer.from(teamId, 'hex')
+            id: Equal(teamId)
         });
     }
 
@@ -96,12 +100,12 @@ export class TeamService {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, memberCode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not already joined team');
-        if (memberInfo.usercode !== memberCode && teamInfo.leader !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
-        if (teamInfo.leader === memberCode) throw new BadRequestException('Unable to delete team leader');
+        if (memberInfo.usercode !== memberCode && teamInfo.leaderId !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (teamInfo.leaderId === memberCode) throw new BadRequestException('Unable to delete team leader');
 
         await this.memberRepository.createQueryBuilder()
             .delete()
-            .where('teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')})
+            .where('teamId = :teamId', {teamId: teamId})
             .andWhere('usercode = :memberCode', {memberCode})
             .execute();
     }

@@ -18,43 +18,53 @@ export class TeamUtil {
     async getTeam(teamId: string) : Promise<Team> {
         const teamInfo = await this.teamRepository.findOne({
             where: {
-                id: Buffer.from(teamId, 'hex')
+                id: teamId
             }
         });
         if (!teamInfo) return null;
 
         return plainToClass(Team, {
             ...teamInfo,
-            id: teamInfo.id.toString('hex')
+            id: teamInfo.id
         });
     }
     
     // 해당 유저가 가입 중인 팀 리스트를 가져오는 함수
     async getTeamListByUsercode(usercode: number) : Promise<Team[]> {
-        const teamListInfo: TeamEntity[] = await this.memberRepository.createQueryBuilder('m')
-            .select([
-                't.id id',
-                't.leader leader',
-                't.name name',
-            ])
-            .leftJoin('m.teamFK', 't')
-            .andWhere('m.usercode = :usercode', {usercode})
-            .getRawMany()
+        const teamListInfo: TeamEntity[] = (await this.memberRepository.find({
+            relations: {
+                team: true
+            },
+            select: ['team'],
+            where: {
+                usercode
+            }
+        })).map(member => member.team);
+        
         if (!teamListInfo) return [];
-        return teamListInfo.map(team => plainToClass(Team, {
-            ...team,
-            id: team.id.toString('hex')
-        }));
+        return teamListInfo.map(team => plainToClass(Team, team, {excludeExtraneousValues: true}));
     }
 
     // 해당 팀의 멤버 리스트를 가져오는 함수
     async getTeamMemberList(teamId: string) : Promise<Member[]> {
-        const memberInfo = await this.memberQueryBuilder(teamId)
-            .getRawMany();
+        const memberInfo = await this.memberRepository.find({
+            relations: {
+                user: true
+            },
+            select: {
+                user: {
+                    usercode: true,
+                    nickname: true
+                }
+            },
+            where: {
+                teamId
+            }
+        });
         return memberInfo.map(member => plainToClass(Member, {
-            ...member,
+            ...member.user,
             teamId
-        }, {excludeExtraneousValues: true}));
+        }, ));
     }
 
     // 유저가 해당 팀에 가입되어있는지 확인하는 함수
@@ -68,7 +78,7 @@ export class TeamUtil {
     }> {
         const teamInfo = await this.teamRepository.findOne({
             where: {
-                id: Buffer.from(teamId, 'hex')
+                id: teamId
             }
         });
         if (!teamInfo) {
@@ -77,38 +87,34 @@ export class TeamUtil {
                 member: null
             }
         }
-        const team: Team = plainToClass(Team, {
-            ...teamInfo,
-            id: teamId
-        }, {excludeExtraneousValues: true})
+        const team: Team = plainToClass(Team, teamInfo, {excludeExtraneousValues: true})
 
-        const memberInfo = await this.memberQueryBuilder(teamId)
-            .andWhere('m.usercode = :usercode', {usercode})
-            .getRawOne();
+        const memberInfo = await this.memberRepository.findOne({
+                relations: {
+                    user: true
+                },
+                select: {
+                    user: {
+                        usercode: true,
+                        nickname: true
+                    }
+                },
+                where: {
+                    teamId,
+                    usercode
+                }
+            });
         if (!memberInfo) {
             return {
                 team,
                 member: null
             }
         }
-        const member: Member = plainToClass(Member, {
-            ...memberInfo,
-            teamId
-        }, {excludeExtraneousValues: true})
+        const member: Member = plainToClass(Member, memberInfo.user, {excludeExtraneousValues: true})
 
         return {
             team,
             member
         }
-    }
-
-    private memberQueryBuilder(teamId: string) {
-        return this.memberRepository.createQueryBuilder('m')
-            .select([
-                'm.usercode usercode',
-                'u.nickname nickname'
-            ])
-            .leftJoin('m.userFK', 'u')
-            .where('m.teamId = :teamId', {teamId: Buffer.from(teamId, 'hex')});
     }
 }

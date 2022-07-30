@@ -1,24 +1,28 @@
-import { Entity, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { Entity, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId, CreateDateColumn, Column } from 'typeorm';
 import { TeamEntity } from 'src/team/entities/team.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('member')
 export class MemberEntity {
+
     @PrimaryGeneratedColumn('increment')
     @PrimaryColumn({unsigned: true})
     id: number;
 
-    @ManyToOne(type => TeamEntity, {onDelete: 'CASCADE'})
+    @ManyToOne(type => TeamEntity, team => team.id, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'teamId'})
-    teamFK: Buffer;
-    
-    @RelationId((member: MemberEntity) => member.teamFK)
-    teamId: Buffer;
+    team: TeamEntity;
 
-    @ManyToOne(type => UserEntity)
+    @Column({nullable: false, length: 32})
+    teamId: string;
+
+    @ManyToOne(type => UserEntity, user => user.usercode)
     @JoinColumn({name: 'usercode'})
-    userFK: number;
+    user: UserEntity;
 
-    @RelationId((member: MemberEntity) => member.userFK)
+    @Column({nullable: false, unsigned: true})
     usercode: number;
+
+    @CreateDateColumn({nullable: false})
+    createdAt: Date
 }
