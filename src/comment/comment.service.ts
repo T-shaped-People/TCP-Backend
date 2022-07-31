@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostEntity } from 'src/post/entities/post.entity';
 import { CommentEntity } from 'src/comment/entities/comment.entity';
-import { Comment } from 'src/comment/comment';
+import { Comment } from 'src/comment/dto/comment';
 import { plainToClass } from '@nestjs/class-transformer';
 import { WriteCommentDTO } from 'src/comment/dto/request/write-comment.dto';
 import { DeleteCommentDTO } from 'src/comment/dto/request/delete-comment.dto';
@@ -20,21 +20,17 @@ export class CommentService {
     ) {}
 
     async viewComment(user: User, postId: number) {
-        const commentInfo = await this.commentRepository.createQueryBuilder('c')
-            .select([
-                'c.id id',
-                'c.deleted deleted',
-                'c.usercode usercode',
-                'u.nickname nickname',
-                'c.depth depth',
-                'c.parent parent',
-                'c.parentId parentId',
-                'c.created created',
-                'c.content content'
-            ])
-            .leftJoin('c.userFK', 'u')
-            .where('c.postId = :postId', {postId})
-            .getRawMany();
+        const commentInfo = await this.commentRepository.find({
+            relations: ['user'],
+            select: {
+                user: {
+                    nickname: true
+                }
+            },
+            where: {
+                postId
+            }
+        });
         return {
             comments: this.commentTree(commentInfo, 0, user.usercode)
         }
@@ -48,7 +44,7 @@ export class CommentService {
             // 존재하는 게시글인지 굳이 확인할 이유가 없음
             const parentComment = await this.commentRepository.findOne({
                 where: {
-                    postFK: postId,
+                    postId,
                     id: parentId
                 }
             });
@@ -59,7 +55,7 @@ export class CommentService {
                     id: parentId
                 }, {
                     parent: true
-                })
+                });
             }
         } else {
             // 대댓글이 아니면 존재하는 게시글에서 작성하는 것인지 확인
@@ -68,17 +64,16 @@ export class CommentService {
                     id: postId,
                     deleted: false
                 }
-            })
+            });
             if (!postInfo) throw new NotFoundException('Post not found');
         }
 
         const newComment: CommentEntity = plainToClass(CommentEntity, {
-            userFK: user.usercode,
-            postFK: postId,
+            usercode: user.usercode,
+            postId,
             ...dto,
-            parentId: parentId === 0? null: parentId,
-            created: new Date
-        })
+            parentId: parentId === 0? null: parentId
+        });
 
         await Promise.all([
             this.commentRepository.save(newComment),
@@ -96,7 +91,7 @@ export class CommentService {
         // 댓글 확인
         const comment = await this.commentRepository.findOne({
             where: {
-                postFK: postId,
+                postId,
                 id: commentId,
                 deleted: false
             }
@@ -123,33 +118,38 @@ export class CommentService {
         commentList: CommentEntity[],
         depth: number,
         usercode: number,
-    ) {
+    ): (Comment | DeletedComment)[] {
         let result: (Comment | DeletedComment)[] = [];
+
         commentList.forEach((e) => {
             // 대댓글의 깊이가 불러오려는 현재 깊이와 같은지 확인
             if (e.depth !== depth) {
                 return [];
             }
+
             const comment: (Comment | DeletedComment) = plainToClass(
                 // 삭제된 댓글인지 확인
                 e.deleted? DeletedComment: Comment,
                 {
                     ...e,
+                    nickname: e.user.nickname,
                     permission: e.usercode === usercode
                 }, {
                     excludeExtraneousValues: true
                 }
             );
+
             if (e.parent) {
                 // 불러오려는 대댓글들만 추출
                 const childList = commentList.filter(child => child.depth !== depth && !(child.depth === depth + 1 && child.parentId !== e.id));
-                const childComment: (Comment | DeletedComment)[] = this.commentTree(childList, depth+1, usercode);
-                if (childComment.length) {
-                    comment.child = childComment;
+                const childComments: (Comment | DeletedComment)[] = this.commentTree(childList, depth+1, usercode);
+                if (childComments.length) {
+                    comment.child = childComments;
                 }
             }
             result.push(comment);
         });
+
         return result;
     }
 }

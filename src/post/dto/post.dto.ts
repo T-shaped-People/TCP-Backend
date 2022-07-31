@@ -15,7 +15,7 @@ export class PostDto {
     category: string;
     
     @Expose()
-    created: Date;
+    createdAt: Date;
     
     @Expose()
     hit: number;

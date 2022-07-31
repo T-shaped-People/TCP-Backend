@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { CategoryEntity } from 'src/post/entities/category.entity';
 
 @Entity('post')
 export class PostEntity {
+    
     @PrimaryGeneratedColumn('increment')
     @PrimaryColumn({unsigned: true})
     id: number;
@@ -13,24 +14,22 @@ export class PostEntity {
     })
     deleted: boolean;
     
-    @ManyToOne(type => UserEntity)
+    @ManyToOne(type => UserEntity, user => user.usercode)
     @JoinColumn({name: 'usercode'})
-    userFK: number;
+    user: UserEntity;
 
-    @RelationId((post: PostEntity) => post.userFK)
+    @Column({nullable: false, unsigned: true})
     usercode: number;
     
-    @ManyToOne(type => CategoryEntity)
-    @JoinColumn({name: 'category'})
-    categoryFK: string;
+    @ManyToOne(type => CategoryEntity, category => category.id)
+    @JoinColumn({name: 'categoryId'})
+    category: CategoryEntity;
 
-    @RelationId((post: PostEntity) => post.categoryFK)
-    category: string;
+    @Column({nullable: true, length: 10})
+    categoryId: string;
 
-    @Column({
-        nullable: false
-    })
-    created: Date;
+    @CreateDateColumn()
+    createdAt: Date;
     
     @Column({
         unsigned: true,

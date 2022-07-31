@@ -18,7 +18,7 @@ export class Comment {
     depth: number;
 
     @Expose()
-    created: Date;
+    createdAt: Date;
 
     @Expose()
     content: string;

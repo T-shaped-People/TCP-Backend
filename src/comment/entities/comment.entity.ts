@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { PostEntity } from 'src/post/entities/post.entity';
 
 @Entity('comment')
 export class CommentEntity {
+
     @PrimaryGeneratedColumn('increment')
     @PrimaryColumn({unsigned: true})
     id: number;
@@ -13,18 +14,18 @@ export class CommentEntity {
     })
     deleted: boolean;
     
-    @ManyToOne(type => UserEntity)
+    @ManyToOne(type => UserEntity, user => user.usercode)
     @JoinColumn({name: 'usercode'})
-    userFK: number;
+    user: UserEntity;
 
-    @RelationId((comment: CommentEntity) => comment.userFK)
+    @Column({nullable: false, unsigned: true})
     usercode: number;
     
     @ManyToOne(type => PostEntity)
     @JoinColumn({name: 'postId'})
-    postFK: number;
+    post: PostEntity;
 
-    @RelationId((comment: CommentEntity) => comment.postFK)
+    @Column({nullable: false, unsigned: true})
     postId: number;
 
     @Column({
@@ -43,8 +44,8 @@ export class CommentEntity {
     })
     parentId: number | null;
 
-    @Column()
-    created: Date;
+    @CreateDateColumn()
+    createdAt: Date;
 
     @Column({
         type: 'text'

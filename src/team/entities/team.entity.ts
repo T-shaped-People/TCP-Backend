@@ -1,4 +1,4 @@
-import { Entity, Column, JoinColumn, ManyToOne, PrimaryColumn, RelationId, CreateDateColumn } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, PrimaryColumn, CreateDateColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('team')
@@ -8,10 +8,10 @@ export class TeamEntity {
     id: string;
 
     @ManyToOne(type => UserEntity, user => user.usercode)
-    @JoinColumn({name: 'leader'})
+    @JoinColumn({name: 'leaderId'})
     leader: UserEntity;
 
-    @RelationId((team: TeamEntity) => team.leader)
+    @Column({nullable: false, unsigned: true})
     leaderId: number
     
     @Column({

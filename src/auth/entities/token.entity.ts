@@ -1,8 +1,9 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, RelationId } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('token')
 export class TokenEntity {
+
     @PrimaryColumn({
         length: 128
     })
@@ -13,11 +14,11 @@ export class TokenEntity {
     })
     valid: boolean;
 
-    @ManyToOne(type => UserEntity)
+    @ManyToOne(type => UserEntity, user => user.usercode)
     @JoinColumn({name: 'usercode'})
-    userFK: UserEntity;
+    user: UserEntity;
 
-    @RelationId((token: TokenEntity) => token.userFK)
+    @Column({nullable: false, unsigned: true})
     usercode: number;
 
     @Column({nullable: false})

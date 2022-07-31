@@ -1,5 +1,5 @@
 import { Exclude, Expose } from "@nestjs/class-transformer";
-import { Comment } from "src/comment/comment";
+import { Comment } from "src/comment/dto/comment";
 
 export class DeletedComment {
     @Expose()
@@ -10,9 +10,6 @@ export class DeletedComment {
 
     @Expose()
     depth: number;
-
-    @Expose()
-    created: Date;
 
     @Exclude()
     permission: boolean = false;

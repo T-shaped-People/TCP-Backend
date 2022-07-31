@@ -12,7 +12,7 @@ export class ChatEntity {
     @Column({
         default: false
     })
-    isDeleted: boolean;
+    deleted: boolean;
     
     @ManyToOne(type => ChatRoomEntity, room => room.id, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'roomId'})

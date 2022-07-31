@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { User } from 'src/auth/user';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Repository } from 'typeorm';
+import { Equal, Not, Repository } from 'typeorm';
 import { TeamEntity } from 'src/team/entities/team.entity';
 import { MemberEntity } from 'src/team/entities/member.entity';
 import { TeamUtil } from 'src/team/team.util';
@@ -43,12 +43,12 @@ export class TeamService {
         const newTeamId = getUUID().replaceAll('-', '');
         const newTeam: TeamEntity = plainToClass(TeamEntity, {
             id: newTeamId,
-            leader: user,
+            leaderId: user.usercode,
             name: teamName
         });
         const newLeader: MemberEntity = plainToClass(MemberEntity, {
             team: newTeam,
-            user: user
+            usercode: user.usercode
         });
 
         await this.teamRepository.save(newTeam);
@@ -76,22 +76,20 @@ export class TeamService {
         if (!teamInfo) throw new NotFoundException('Team not found');
         if (teamInfo.leaderId !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
 
-        const memberExist = await this.memberRepository.createQueryBuilder('m')
-            .select([
-                'm.usercode usercode'
-            ])
-            .where('m.teamId = :teamId', {teamId: teamId})
-            .andWhere('m.usercode != :usercode', {usercode: user.usercode})
-            .getRawOne();
+        const memberExist = await this.memberRepository.findOne({
+            where: {
+                teamId,
+                usercode: Not(user.usercode)
+            }
+        })
         if (memberExist) throw new ConflictException('Please remove all team members');
 
-        await this.memberRepository.createQueryBuilder()
-            .delete()
-            .where('teamId = :teamId', {teamId: teamId})
-            .andWhere('usercode = :leader', {leader: user.usercode})
-            .execute();
+        await this.memberRepository.delete({
+            teamId,
+            usercode: user.usercode
+        });
         await this.teamRepository.delete({
-            id: Equal(teamId)
+            id: teamId
         });
     }
 

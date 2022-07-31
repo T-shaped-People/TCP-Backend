@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, RelationId, CreateDateColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn, Column } from 'typeorm';
 import { TeamEntity } from 'src/team/entities/team.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
 

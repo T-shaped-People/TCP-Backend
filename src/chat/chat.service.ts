@@ -68,8 +68,7 @@ export class ChatService {
         const newRoom: ChatRoomEntity = plainToClass(ChatRoomEntity, {
             id: newRoomId,
             teamId: teamId,
-            title: roomTitle,
-            date: new Date
+            title: roomTitle
         });
         
         await this.chatRoomRepository.save(newRoom);
@@ -96,7 +95,6 @@ export class ChatService {
             plainToClass(ChatEntity, {
                 roomId: roomId,
                 usercode: user.usercode,
-                date: new Date,
                 content
             })
         );
