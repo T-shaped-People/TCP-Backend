@@ -173,6 +173,7 @@ export class PostService {
             }
         });
     }
+    
     private getCategoryOption(category: string): undefined | string | FindOperator<any> {
         if (category === 'all') {
             return undefined;
