@@ -9,7 +9,7 @@ export class MemberEntity {
     @PrimaryColumn({unsigned: true})
     id: number;
 
-    @ManyToOne(type => TeamEntity, team => team.id, {onDelete: 'CASCADE'})
+    @ManyToOne(type => TeamEntity, team => team.members, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'teamId'})
     team: TeamEntity;
 

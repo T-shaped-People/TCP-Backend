@@ -8,5 +8,11 @@ export class Team {
     leaderId: number;
 
     @Expose()
+    leaderNickname: string;
+
+    @Expose()
     name: string;
+
+    @Expose()
+    totalMembers: number;
 }

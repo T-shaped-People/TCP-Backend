@@ -21,15 +21,29 @@ export class TeamService {
     ) {}
         
     async getTeam(teamId: string): Promise<Team> {
-        return this.teamUtil.getTeam(teamId);
+        const team = await this.teamUtil.getTeam(teamId);
+        return plainToClass(Team, {
+            ...team,
+            leaderNickname: team.leader.nickname,
+            totalMembers: team.members.length
+        }, {excludeExtraneousValues: true});
     }
     
     async getTeamList(user: User): Promise<Team[]> {
-        return this.teamUtil.getTeamListByUsercode(user.usercode);
+        const teamList = await this.teamUtil.getTeamListByUsercode(user.usercode);
+        return teamList.map(team => plainToClass(Team, {
+            ...team,
+            leaderNickname: team.leader.nickname,
+            totalMembers: team.members.length
+        }, {excludeExtraneousValues: true}));
     }
-
+    
     async getTeamMemberList(teamId: string): Promise<Member[]> {
-        return this.teamUtil.getTeamMemberList(teamId);
+        const memberList = await this.teamUtil.getTeamMemberList(teamId);
+        return memberList.map(member => plainToClass(Member, {
+            ...member,
+            nickname: member.user.nickname
+        }, {excludeExtraneousValues: true}));
     }
 
     async createTeam(user: User, teamName: string) {

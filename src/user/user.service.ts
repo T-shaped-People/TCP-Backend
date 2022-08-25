@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto'
 
 import { CreateUserOAuthDTO } from 'src/user/dto/create-user-oauth.dto';
-import { BSMOAuthCodeDTO } from 'src/user/dto/bsm-code-dto';
+import { BSMOAuthCodeDTO } from 'src/user/dto/bsm-code.dto';
 import { BSMOAuthResourceDTO } from 'src/user/dto/bsm-resource.dto';
 import { TokenEntity } from 'src/auth/entities/token.entity';
 import { User } from 'src/auth/user';
