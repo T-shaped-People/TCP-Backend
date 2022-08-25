@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToClass } from 'class-transformer';
+import { plainToClass } from '@nestjs/class-transformer';
 import { User } from 'src/auth/user';
 import { Repository } from 'typeorm';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
@@ -18,8 +18,7 @@ export class TodoService {
             .map(todo => plainToClass(TodoDto, {
             ...todo,
             nickname: todo.user.nickname,
-        }, {excludeExtraneousValues: false}))
-    
+        }, {excludeExtraneousValues: true}))
         return todos;     
     }
 
@@ -29,7 +28,6 @@ export class TodoService {
             return await this.todoRepository.find({
                 relations: ['user'],
                 select: {
-                    usercode: false,
                     user: {
                         nickname: true
                     }
