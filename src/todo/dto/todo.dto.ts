@@ -10,6 +10,12 @@ export class TodoDto {
 
     @Expose()
     nickname: string;
+
+    @Expose()
+    createdAt: Date;
+
+    @Expose()
+    endAt: Date;
     
     @Expose()
     title: string;
