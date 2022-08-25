@@ -13,31 +13,65 @@ export class TodoService {
         @InjectRepository(TodoEntity) private todoRepository: Repository<TodoEntity>,
     ) {}
 
-    async GetTodo() {
-        const todos: TodoDto[] = (await this.getTodoList())
+    async GetTodo(getRange: number) {
+        const todos: TodoDto[] = (await this.getTodoList(getRange))
             .map(todo => plainToClass(TodoDto, {
             ...todo,
             nickname: todo.user.nickname,
-        }, {excludeExtraneousValues: true}));
+        }, {excludeExtraneousValues: false}))
     
-        return todos;
+        return todos;     
     }
 
-    private async getTodoList(): Promise<TodoEntity[]> {
-        return await this.todoRepository.find({
-            relations: ['user'],
-            select: {
-                user: {
-                    nickname: true
+    private async getTodoList(getRange: number): Promise<TodoEntity[]> {
+        // 전체 Todo 가져오기
+        if (getRange === 0) {
+            return await this.todoRepository.find({
+                relations: ['user'],
+                select: {
+                    usercode: false,
+                    user: {
+                        nickname: true
+                    }
+                },
+                order: {
+                    id: 'DESC'
                 }
-            },
-            // where: {
-            //     completed: false,
-            // },
-            order: {
-                id: 'DESC'
-            }
-        });
+            });
+        }
+        // 완료된 Todo 가져오기
+        else if (getRange === 1) {
+            return await this.todoRepository.find({
+                relations: ['user'],
+                select: {
+                    user: {
+                        nickname: true
+                    }
+                },
+                where: {
+                    completed: true,
+                },
+                order: {
+                    id: 'DESC'
+                }
+            });
+        }
+        else {
+            return await this.todoRepository.find({
+                relations: ['user'],
+                select: {
+                    user: {
+                        nickname: true
+                    }
+                },
+                where: {
+                    completed: false,
+                },
+                order: {
+                    id: 'DESC'
+                }
+            });
+        }
     }
 
     async UploadTodo(user: User, dto: UploadTodoDTO) {

@@ -22,5 +22,5 @@ export class TodoDto {
     
     @Expose()
     todo: string;
-    
+
 }

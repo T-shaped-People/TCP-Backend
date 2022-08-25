@@ -21,6 +21,16 @@ export class TodoController {
 
     @Get()
     getTodo() {
-        return this.todoservice.GetTodo();
+        return this.todoservice.GetTodo(0);
+    }
+
+    @Get('completed')
+    getCompletedTodo() {
+        return this.todoservice.GetTodo(1);
+    }
+
+    @Get('Incompleted')
+    getIncompletedTodo() {
+        return this.todoservice.GetTodo(2);
     }
 }
