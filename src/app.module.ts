@@ -13,6 +13,7 @@ import {
   utilities as nestWinstonModuleUtilities,
   WinstonModule,
 } from 'nest-winston';
+import { TodoModule } from './todo/todo.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import {
     CommentModule,
     TeamModule,
     DrawingModule,
-    ChatModule],
+    ChatModule,
+    TodoModule],
   controllers: [],
   providers: [],
 })
