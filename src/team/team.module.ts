@@ -6,10 +6,11 @@ import { TeamService } from 'src/team/team.service';
 import { TeamEntity } from 'src/team/entities/team.entity';
 import { TeamUtil } from 'src/team/team.util';
 import { MemberEntity } from 'src/team/entities/member.entity';
+import { TeamCodeEntity } from 'src/team/entities/team-code.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TeamEntity, MemberEntity]),
+    TypeOrmModule.forFeature([TeamEntity, MemberEntity, TeamCodeEntity]),
     ClassTransformer
   ],
   controllers: [TeamController],

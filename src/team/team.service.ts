@@ -2,21 +2,24 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { User } from 'src/auth/user';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Not, Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { TeamEntity } from 'src/team/entities/team.entity';
 import { MemberEntity } from 'src/team/entities/member.entity';
 import { TeamUtil } from 'src/team/team.util';
 
 import { v4 as getUUID } from 'uuid';
+import { randomBytes } from 'crypto';
 import { Team } from 'src/team/team';
 import { Member } from 'src/team/member';
 import { DeleteMemberDTO } from 'src/team/dto/delete-member.dto';
+import { TeamCodeEntity } from 'src/team/entities/team-code.entity';
 
 @Injectable()
 export class TeamService {
     constructor(
         @InjectRepository(TeamEntity) private teamRepository: Repository<TeamEntity>,
         @InjectRepository(MemberEntity) private memberRepository: Repository<MemberEntity>,
+        @InjectRepository(TeamCodeEntity) private teamCodeRepository: Repository<TeamCodeEntity>,
         private teamUtil: TeamUtil
     ) {}
         
@@ -72,8 +75,15 @@ export class TeamService {
         }
     }
     
-    async joinTeam(user: User, teamId: string) {
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+    async joinTeam(user: User, teamCode: string) {
+        const teamCodeInfo = await this.teamCodeRepository.findOne({
+            where: {
+                code: teamCode
+            }
+        });
+        if (teamCodeInfo === null) throw new NotFoundException("Team code not found");
+
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamCodeInfo.teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo !== null) throw new ConflictException('Already joined team');
 
@@ -83,6 +93,25 @@ export class TeamService {
         });
 
         await this.memberRepository.save(newMember);
+    }
+
+    async createTeamCode(user: User, teamId: string) {
+        const teamInfo = await this.teamUtil.getTeam(teamId);
+        if (!teamInfo) throw new NotFoundException('Team not found');
+        if (teamInfo.leaderId !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
+
+        const newCode = randomBytes(3).toString('hex');
+        const newCodeEntity = plainToClass(TeamCodeEntity, {
+            code: newCode,
+            teamId,
+            createdAt: new Date
+        });
+
+        await this.teamCodeRepository.save(newCodeEntity);
+
+        return {
+            teamCode: newCode
+        }
     }
 
     async deleteTeam(user: User, teamId: string) {
@@ -95,7 +124,7 @@ export class TeamService {
                 teamId,
                 usercode: Not(user.usercode)
             }
-        })
+        });
         if (memberExist) throw new ConflictException('Please remove all team members');
 
         await this.memberRepository.delete({

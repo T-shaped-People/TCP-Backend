@@ -44,10 +44,19 @@ export class TeamController {
     @Post('join')
     joinTeam(
         @GetUser() user: User,
-        @Body('teamId') teamId: string
+        @Body('teamCode') teamCode: string
     ) {
         this.logger.log('POST : 팀 참여 실행');
-        return this.teamService.joinTeam(user, teamId);
+        return this.teamService.joinTeam(user, teamCode);
+    }
+    
+    @Post('code')
+    createTeamCode(
+        @GetUser() user: User,
+        @Body('teamId') teamId: string
+    ) {
+        this.logger.log('POST : 팀 코드 생성 실행');
+        return this.teamService.createTeamCode(user, teamId);
     }
     
     @Delete(':teamId')

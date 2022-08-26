@@ -148,7 +148,7 @@ export class UserService {
     refreshToken.token = randomBytes(64).toString('hex');
     refreshToken.usercode = usercode;
     refreshToken.valid = true;
-    refreshToken.created = new Date;
+    refreshToken.createdAt = new Date;
     await this.tokenRepository.save(refreshToken);
     return refreshToken;
   }

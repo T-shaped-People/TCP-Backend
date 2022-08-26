@@ -22,5 +22,5 @@ export class TokenEntity {
     usercode: number;
 
     @Column({nullable: false})
-    created: Date;
+    createdAt: Date;
 }
