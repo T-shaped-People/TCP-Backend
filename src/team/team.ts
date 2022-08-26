@@ -14,5 +14,14 @@ export class Team {
     name: string;
 
     @Expose()
+    description: string;
+
+    @Expose()
+    startDate: Date;
+
+    @Expose()
+    deadline: Date;
+
+    @Expose()
     totalMembers: number;
 }

@@ -6,6 +6,7 @@ import { DeleteMemberDTO } from 'src/team/dto/delete-member.dto';
 import { TeamService } from './team.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
+import { CreateTeamDto } from 'src/team/dto/request/create-team.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('team')
@@ -35,10 +36,10 @@ export class TeamController {
     @Post()
     createTeam(
         @GetUser() user: User,
-        @Body('teamName') teamName: string
+        @Body() dto: CreateTeamDto
     ) {
         this.logger.log('POST : 팀 생성 실행');
-        return this.teamService.createTeam(user, teamName);
+        return this.teamService.createTeam(user, dto);
     }
 
     @Post('join')

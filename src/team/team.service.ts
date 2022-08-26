@@ -13,6 +13,7 @@ import { Team } from 'src/team/team';
 import { Member } from 'src/team/member';
 import { DeleteMemberDTO } from 'src/team/dto/delete-member.dto';
 import { TeamCodeEntity } from 'src/team/entities/team-code.entity';
+import { CreateTeamDto } from 'src/team/dto/request/create-team.dto';
 
 @Injectable()
 export class TeamService {
@@ -49,19 +50,20 @@ export class TeamService {
         }, {excludeExtraneousValues: true}));
     }
 
-    async createTeam(user: User, teamName: string) {
+    async createTeam(user: User, dto: CreateTeamDto) {
         const teamInfo = await this.teamRepository.findOne({
             where: {
-                name: teamName
+                name: dto.teamName
             }
         });
         if (teamInfo) throw new ConflictException('Team name already exists');
         
         const newTeamId = getUUID().replaceAll('-', '');
         const newTeam: TeamEntity = plainToClass(TeamEntity, {
+            ...dto,
+            name: dto.teamName,
             id: newTeamId,
             leaderId: user.usercode,
-            name: teamName
         });
         const newLeader: MemberEntity = plainToClass(MemberEntity, {
             team: newTeam,

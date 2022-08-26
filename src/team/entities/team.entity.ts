@@ -20,6 +20,21 @@ export class TeamEntity {
     })
     name: string;
 
+    @Column({
+        length: 255
+    })
+    description: string;
+
+    @Column({
+        type: 'date'
+    })
+    startDate: Date
+
+    @Column({
+        type: 'date'
+    })
+    deadline: Date;
+
     @CreateDateColumn()
     createdAt: Date;
 
