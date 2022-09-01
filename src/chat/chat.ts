@@ -18,7 +18,7 @@ export class Chat {
     nickname: string;
 
     @Expose()
-    date: Date;
+    createdAt: Date;
 
     @Expose()
     content: string;

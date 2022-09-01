@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from 'src/auth/user';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -95,6 +95,9 @@ export class TeamService {
         });
 
         await this.memberRepository.save(newMember);
+        return {
+            teamId: teamInfo.id
+        };
     }
 
     async createTeamCode(user: User, teamId: string) {
