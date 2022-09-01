@@ -1,7 +1,8 @@
-import { Controller, Post, UseGuards, Body, Get } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get, Param } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
+import { GetTodoDTO } from './dto/request/get-todo.dto';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoService } from './todo.service';
 
@@ -15,22 +16,23 @@ export class TodoController {
     uploadTodo(
         @GetUser() user: User,
         @Body() dto: UploadTodoDTO
-      ) {
+    ): Promise<string> {
         return this.todoservice.UploadTodo(user, dto);
     }
 
-    @Get()
-    getTodo() {
-        return this.todoservice.GetTodo(0);
+    @Get(':teamId')
+    getTodo(@GetUser() user: User, @Param() dto: GetTodoDTO) {
+        return this.todoservice.GetTodo(user, dto, 0);
     }
 
-    @Get('completed')
-    getCompletedTodo() {
-        return this.todoservice.GetTodo(1);
+    @Get('completed/:teamId')
+    getCompletedTodo(@GetUser() user: User, @Param() dto: GetTodoDTO) {
+        return this.todoservice.GetTodo(user, dto, 1);
     }
 
-    @Get('Incompleted')
-    getIncompletedTodo() {
-        return this.todoservice.GetTodo(2);
+    @Get('Incompleted/:teamId')
+    getIncompletedTodo(@GetUser() user: User, @Param() dto: GetTodoDTO) {
+        return this.todoservice.GetTodo(user, dto, 2);
     }
+    
 }

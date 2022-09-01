@@ -4,13 +4,17 @@ import { ClassTransformer } from '@nestjs/class-transformer';
 import { TodoEntity } from './entities/todo.entity';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
+import { TeamUtil } from 'src/team/team.util';
+import { TeamModule } from 'src/team/team.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([TodoEntity]),
-        ClassTransformer
+        ClassTransformer,
+        TeamModule
     ],
   controllers: [TodoController],
-  providers: [TodoService]
+  providers: [TodoService, 
+              TeamUtil]
 })
 export class TodoModule {}
