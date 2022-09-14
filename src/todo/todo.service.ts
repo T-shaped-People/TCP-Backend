@@ -131,22 +131,22 @@ export class TodoService {
     }
 
     async MentionTodo(user: User, dto: MentionDTO): Promise<number> {
-        const { teamId, usercode, id } = dto;
+        const { teamId, mentionUsercode, todoId } = dto;
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
-        if (usercode === user.usercode) throw new BadRequestException('Can\'t mention on myself');
+        if (mentionUsercode === user.usercode) throw new BadRequestException('Can\'t mention on myself');
         const mentionUser = await this.userRepository.findOneBy({
-            usercode: dto.usercode
+            usercode: dto.mentionUsercode
         })
         if (mentionUser === null) throw new NotFoundException('Mention user not found');
         const mentionToUpdate = await this.todoRepository.findOneBy({
-            id: id,
+            id: todoId,
         })
         if (mentionToUpdate === null) throw new NotFoundException('Todo not found');
-        mentionToUpdate.mention = dto.usercode;
+        mentionToUpdate.mention = dto.mentionUsercode;
         await this.todoRepository.save(mentionToUpdate)
-        return dto.usercode;
+        return dto.mentionUsercode;
     }
 
     async GetMentionedUserInfo(user: User, dto: GetMentionedUserDTO) {

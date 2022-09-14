@@ -22,7 +22,7 @@ export class TodoEntity {
     @Column({nullable: false, unsigned: true})
     usercode: number;
     
-    @Column({nullable: false, unsigned: true})
+    @Column({nullable: false, unsigned: true, default: 0})
     mention: number;
 
     @ManyToOne(type => TeamEntity, team => team.id, {onDelete: 'CASCADE'})

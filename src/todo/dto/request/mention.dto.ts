@@ -2,11 +2,11 @@ import { IsNumber, IsString } from "class-validator";
 
 export class MentionDTO {
     @IsNumber()
-    id: number;
+    todoId: number;
 
     @IsString()
     teamId: string;
 
     @IsNumber()
-    usercode: number;
+    mentionUsercode: number;
 }
