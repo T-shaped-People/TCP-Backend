@@ -9,11 +9,13 @@ import { TodoEntity } from './entities/todo.entity';
 import { TeamUtil } from 'src/team/team.util';
 import { GetTodoDTO } from './dto/request/get-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
+import { UserEntity } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class TodoService {
     constructor(
         @InjectRepository(TodoEntity) private todoRepository: Repository<TodoEntity>,
+        @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
         private teamUtil: TeamUtil
     ) {}
 
@@ -133,9 +135,14 @@ export class TodoService {
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
         if (usercode === user.usercode) throw new BadRequestException('Can\'t mention on myself');
+        const mentionUser = await this.userRepository.findOneBy({
+            usercode: dto.usercode
+        })
+        if (mentionUser === null) throw new NotFoundException('Mention user not found');
         const mentionToUpdate = await this.todoRepository.findOneBy({
             id: id,
         })
+        if (mentionToUpdate === null) throw new NotFoundException('Todo not found');
         mentionToUpdate.mention = dto.usercode;
         await this.todoRepository.save(mentionToUpdate)
         return dto.usercode;
