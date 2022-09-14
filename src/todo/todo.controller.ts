@@ -2,7 +2,7 @@ import { Controller, Post, UseGuards, Body, Get, Param } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
-import { GetMentionUserDTO } from './dto/request/get-mention-user.dto';
+import { GetMentionedUserDTO } from './dto/request/get-mentioned-user.dto';
 import { GetTodoDTO } from './dto/request/get-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
@@ -46,7 +46,7 @@ export class TodoController {
     }
 
     @Get('mention/:teamId/:id')
-    getMentionUserInfo(@GetUser() user: User, @Param() dto: GetMentionUserDTO) {
-        return this.todoservice.GetMentionUserInfo(user, dto);
+    getMentionUserInfo(@GetUser() user: User, @Param() dto: GetMentionedUserDTO) {
+        return this.todoservice.GetMentionedUserInfo(user, dto);
     }
 }

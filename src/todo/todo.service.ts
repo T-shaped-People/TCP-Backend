@@ -10,7 +10,7 @@ import { TeamUtil } from 'src/team/team.util';
 import { GetTodoDTO } from './dto/request/get-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { GetMentionUserDTO } from './dto/request/get-mention-user.dto';
+import { GetMentionedUserDTO } from './dto/request/get-mentioned-user.dto';
 
 @Injectable()
 export class TodoService {
@@ -149,7 +149,7 @@ export class TodoService {
         return dto.usercode;
     }
 
-    async GetMentionUserInfo(user: User, dto: GetMentionUserDTO) {
+    async GetMentionedUserInfo(user: User, dto: GetMentionedUserDTO) {
         const { teamId, id } = dto;
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
@@ -161,12 +161,13 @@ export class TodoService {
         .where("id = :id", {id: id})
         .getRawOne()
 
-        const mentionUser = await this.userRepository
+        const mentionedUser = await this.userRepository
         .createQueryBuilder()
         .select("*")
         .where("usercode = " + TodoQb.mention)
         .getRawOne()
-        // console.log(mentionUser)
-        return mentionUser;
+    
+        if (mentionedUser === null) throw new NotFoundException('Not found mentioned user')
+        return mentionedUser;
     }
 }
