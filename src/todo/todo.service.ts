@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, InternalServerErrorException, I
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from '@nestjs/class-transformer';
 import { User } from 'src/auth/user';
-import { Repository } from 'typeorm';
+import { getConnection, Repository, TreeRepositoryUtils } from 'typeorm';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoDto } from './dto/todo.dto';
 import { TodoEntity } from './entities/todo.entity';
@@ -10,6 +10,7 @@ import { TeamUtil } from 'src/team/team.util';
 import { GetTodoDTO } from './dto/request/get-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
+import { GetMentionUserDTO } from './dto/request/get-mention-user.dto';
 
 @Injectable()
 export class TodoService {
@@ -148,4 +149,24 @@ export class TodoService {
         return dto.usercode;
     }
 
+    async GetMentionUserInfo(user: User, dto: GetMentionUserDTO) {
+        const { teamId, id } = dto;
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+
+        const TodoQb = await this.todoRepository
+        .createQueryBuilder()
+        .select("mention")
+        .where("id = :id", {id: id})
+        .getRawOne()
+
+        const mentionUser = await this.userRepository
+        .createQueryBuilder()
+        .select("*")
+        .where("usercode = " + TodoQb.mention)
+        .getRawOne()
+        // console.log(mentionUser)
+        return mentionUser;
+    }
 }
