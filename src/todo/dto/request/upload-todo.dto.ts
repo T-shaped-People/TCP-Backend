@@ -13,4 +13,5 @@ export class UploadTodoDTO {
 
     @IsDate()
     endAt: Date;
+
 }

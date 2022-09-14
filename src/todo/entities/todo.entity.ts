@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn, ManyToMany } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { TeamEntity } from 'src/team/entities/team.entity';
 
@@ -21,6 +21,9 @@ export class TodoEntity {
 
     @Column({nullable: false, unsigned: true})
     usercode: number;
+    
+    @Column({nullable: false, unsigned: true})
+    mention: number;
 
     @ManyToOne(type => TeamEntity, team => team.id, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'teamId'})

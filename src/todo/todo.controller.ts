@@ -3,6 +3,7 @@ import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
 import { GetTodoDTO } from './dto/request/get-todo.dto';
+import { MentionDTO } from './dto/request/mention.dto';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoService } from './todo.service';
 
@@ -18,6 +19,14 @@ export class TodoController {
         @Body() dto: UploadTodoDTO
     ): Promise<string> {
         return this.todoservice.UploadTodo(user, dto);
+    }
+
+    @Post('mention') 
+    mentionTodo(
+        @GetUser() user: User,
+        @Body() dto: MentionDTO
+    ) {
+        return this.todoservice.MentionTodo(user, dto);
     }
 
     @Get(':teamId')

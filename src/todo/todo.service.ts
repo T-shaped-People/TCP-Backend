@@ -1,4 +1,4 @@
-import { ConflictException, InternalServerErrorException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, InternalServerErrorException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from '@nestjs/class-transformer';
 import { User } from 'src/auth/user';
@@ -8,6 +8,7 @@ import { TodoDto } from './dto/todo.dto';
 import { TodoEntity } from './entities/todo.entity';
 import { TeamUtil } from 'src/team/team.util';
 import { GetTodoDTO } from './dto/request/get-todo.dto';
+import { MentionDTO } from './dto/request/mention.dto';
 
 @Injectable()
 export class TodoService {
@@ -110,7 +111,7 @@ export class TodoService {
         await this.saveTodo(user.usercode, dto);
         return todo;
     }
-
+    
     private async saveTodo(
         usercode: number,
         dto: UploadTodoDTO
@@ -124,6 +125,20 @@ export class TodoService {
             usercode
         });
         await this.todoRepository.save(Todo);
+    }
+
+    async MentionTodo(user: User, dto: MentionDTO): Promise<number> {
+        const { teamId, usercode, id } = dto;
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        if (usercode === user.usercode) throw new BadRequestException('Can\'t mention on myself');
+        const mentionToUpdate = await this.todoRepository.findOneBy({
+            id: id,
+        })
+        mentionToUpdate.mention = dto.usercode;
+        await this.todoRepository.save(mentionToUpdate)
+        return dto.usercode;
     }
 
 }
