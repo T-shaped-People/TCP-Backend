@@ -177,11 +177,19 @@ export class TodoService {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
-
+        const ModifyTodo = await this.todoRepository.findOne({
+            select: {
+                usercode: true
+            },
+            where: {
+                id: todoId
+            }
+        });
+        if (ModifyTodo.usercode !== user.usercode) throw new NotFoundException('Can\'t modify another user\'s todo');
         await this.todoRepository.update({
             id: todoId
         }, {
             completed: true
-        })
+        });
     }
 }

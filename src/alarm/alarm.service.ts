@@ -4,7 +4,9 @@ import { User } from 'src/auth/user';
 import { TeamUtil } from 'src/team/team.util';
 import { TodoEntity } from 'src/todo/entities/todo.entity';
 import { Repository } from 'typeorm';
+import { AlarmDTO } from './dto/alarm.dto';
 import { ViewAlarmDTO } from './dto/request/view-alarm.dto';
+import { plainToClass } from '@nestjs/class-transformer';
 
 @Injectable()
 export class AlarmService {
@@ -20,16 +22,15 @@ export class AlarmService {
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
 
+        const alarms: AlarmDTO[] = (await this.getAlarm(teamId, usercode))
+            .map(alarm => plainToClass(AlarmDTO, {
+            ...alarm,
+        }, {excludeExtraneousValues: true}))
+        return alarms;
+    }
+
+    private async getAlarm(teamId: string, usercode: number) {
         return this.todoRepository.find({
-            select: {
-                id: true,
-                completed: true,
-                usercode: true,
-                createdAt: true,
-                endAt: true,
-                title: true,
-                todo: true,
-            },
             relations: {
                 team: true
             },
@@ -44,6 +45,5 @@ export class AlarmService {
                 id: 'DESC'
             }
         })
-    
     }
 }
