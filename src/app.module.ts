@@ -7,13 +7,14 @@ import { TeamModule } from 'src/team/team.module';
 import { UserModule } from './user/user.module';
 import { DrawingModule } from './drawing/drawing.module';
 import { ChatModule } from './chat/chat.module';
+import { TodoModule } from './todo/todo.module';
+import { AlarmModule } from './alarm/alarm.module';
 
 import * as winston from 'winston';
 import {
   utilities as nestWinstonModuleUtilities,
   WinstonModule,
 } from 'nest-winston';
-import { TodoModule } from './todo/todo.module';
 
 @Module({
   imports: [
@@ -49,8 +50,8 @@ import { TodoModule } from './todo/todo.module';
     TeamModule,
     DrawingModule,
     ChatModule,
-    TodoModule],
+    TodoModule,
+    AlarmModule],
   controllers: [],
-  providers: [],
 })
 export class AppModule {}

@@ -7,10 +7,10 @@ import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoDto } from './dto/todo.dto';
 import { TodoEntity } from './entities/todo.entity';
 import { TeamUtil } from 'src/team/team.util';
-import { GetTodoDTO } from './dto/request/get-todo.dto';
+import { GetTodoDTO } from './dto/request/view-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { GetMentionedUserDTO } from './dto/request/get-mentioned-user.dto';
+import { GetMentionedUserDTO } from './dto/request/view-mentioned-user.dto';
 
 @Injectable()
 export class TodoService {
@@ -20,7 +20,7 @@ export class TodoService {
         private teamUtil: TeamUtil
     ) {}
 
-    async GetTodo(user: User, dto: GetTodoDTO, getRange: number) {
+    async ViewTodo(user: User, dto: GetTodoDTO, getRange: number) {
         const { teamId } = dto;
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
@@ -149,7 +149,7 @@ export class TodoService {
         return dto.mentionUsercode;
     }
 
-    async GetMentionedUserInfo(user: User, dto: GetMentionedUserDTO) {
+    async ViewMentionedUserInfo(user: User, dto: GetMentionedUserDTO) {
         const { teamId, id } = dto;
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');

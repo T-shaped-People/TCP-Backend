@@ -14,8 +14,8 @@ import { UserEntity } from 'src/user/entities/user.entity';
         ClassTransformer,
         TeamModule
     ],
-  controllers: [TodoController],
-  providers: [TodoService, 
+    controllers: [TodoController],
+    providers: [TodoService, 
               TeamUtil]
 })
 export class TodoModule {}
