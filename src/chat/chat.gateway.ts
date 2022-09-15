@@ -2,6 +2,7 @@ import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnectio
 import { Server, Socket } from 'socket.io';
 import { User } from 'src/auth/user';
 import { WSAuthUtil } from 'src/auth/WS-auth.util';
+import { ChatRoomJoinDto } from 'src/chat/dto/chat-room-join.dto';
 import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
 
 import { ChatService } from './chat.service';
@@ -23,7 +24,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private clients: {
         [index: string]: {
             user: User,
-            socket: Socket
+            socket: Socket,
+            roomId?: string
         }
     } = {};
 
@@ -39,14 +41,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             user: userInfo,
             socket: client
         };
-        
-        this.server.emit('chat:user-join', {
-            usercode: userInfo.usercode,
-            nickname: userInfo.nickname
-        });
     }
 
-    async handleDisconnect(client: Socket): Promise<void> {
+    async handleDisconnect(client: Socket) {
         const userInfo = this.clients[client.id]?.user;
         if (!userInfo) return;
         this.server.emit('chat:user-exit', {
@@ -55,12 +52,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         delete this.clients[client.id];
     }
     
+    @SubscribeMessage('chat:room-join')
+    async joinRoom(client: Socket, data: ChatRoomJoinDto) {
+        const clientInfo = this.clients[client.id];
+        if (!clientInfo?.user) return;
+        const {teamId, roomId, user} = {...data, ...clientInfo};
+        clientInfo.roomId = (await this.chatService.getChatRoom(teamId, user, roomId)).id;
+
+        client.join(clientInfo.roomId);
+        this.server.to(clientInfo.roomId).emit('chat:user-join', {
+            usercode: user.usercode,
+            nickname: user.nickname
+        });
+    }
+
     @SubscribeMessage('chat')
-    async onPosition(client: Socket, data: SaveChatDTO): Promise<void> {
+    async chat(client: Socket, data: SaveChatDTO): Promise<void> {
         const userInfo = this.clients[client.id]?.user;
         if (!userInfo) return;
         const chatInfo = await this.chatService.saveChat(userInfo, data);
-        console.log(chatInfo);
-        this.server.to(client.id).emit('chat', chatInfo);
+        this.server.to(chatInfo.roomId).emit('chat', chatInfo);
     }
 }

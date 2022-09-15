@@ -22,8 +22,7 @@ export class ChatService {
         private teamUtil: TeamUtil
     ) {}
 
-    async getChatList(user: User, dto: getChatListDTO) {
-        const { teamId, roomId, startChatId } = dto;
+    async getChatRoom(teamId: string, user: User, roomId: string):Promise<ChatRoomEntity> {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
@@ -34,6 +33,12 @@ export class ChatService {
             }
         });
         if (!roomInfo || roomInfo.teamId !== teamId) throw new NotFoundException('Chat room not found');
+        return roomInfo;
+    }
+
+    async getChatList(user: User, dto: getChatListDTO) {
+        const { teamId, roomId, startChatId } = dto;
+        await this.getChatRoom(teamId, user, roomId);
         
         const chatList: ChatEntity[] = await this.chatRepository.find({
             relations: {
@@ -79,17 +84,7 @@ export class ChatService {
 
     async saveChat(user: User, dto: SaveChatDTO): Promise<Chat> {
         const { teamId, roomId, content } = dto;
-
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
-        if (teamInfo === null) throw new NotFoundException('Team not found');
-        if (memberInfo === null) throw new NotFoundException('Not joined team');
-
-        const roomInfo = await this.chatRoomRepository.findOne({
-            where: {
-                id: roomId
-            }
-        });
-        if (!roomInfo || roomInfo.teamId !== teamId) throw new NotFoundException('Chat room not found');
+        await this.getChatRoom(teamId, user, roomId);
         
         const newChat = await this.chatRepository.save(
             plainToClass(ChatEntity, {
