@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { CategoryEntity } from 'src/post/entities/category.entity';
+import { TeamEntity } from 'src/team/entities/team.entity';
 
 @Entity('post')
 export class PostEntity {
@@ -21,6 +22,13 @@ export class PostEntity {
     @Column({nullable: false, unsigned: true})
     usercode: number;
     
+    @ManyToOne(type => TeamEntity, team => team.id, {onDelete: 'CASCADE'})
+    @JoinColumn({name: 'teamId'})
+    team: TeamEntity;
+
+    @Column({nullable: true, length: 32})
+    teamId: string;
+
     @ManyToOne(type => CategoryEntity, category => category.id)
     @JoinColumn({name: 'categoryId'})
     category: CategoryEntity;

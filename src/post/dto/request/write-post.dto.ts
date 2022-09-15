@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class WritePostDTO {
     @IsString()
@@ -10,4 +10,8 @@ export class WritePostDTO {
     @IsString()
     @IsNotEmpty()
     content: string;
+
+    @IsOptional()
+    @IsString()
+    teamId?: string;
 }

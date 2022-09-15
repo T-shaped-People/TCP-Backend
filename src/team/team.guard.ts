@@ -10,7 +10,7 @@ export class TeamGuard implements CanActivate {
         context: ExecutionContext,
     ): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
-        const { teamId } = request.params;
+        const { teamId } = request.params ?? request.body;
         const { usercode } = request.user;
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');

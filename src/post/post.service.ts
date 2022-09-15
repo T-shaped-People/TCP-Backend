@@ -9,12 +9,14 @@ import { PostEntity } from '../post/entities/post.entity';
 import { WritePostDTO } from 'src/post/dto/request/write-post.dto';
 import { postListDTO } from 'src/post/dto/request/post-list.dto';
 import { ViewPostDto } from 'src/post/dto/view-post.dto';
+import { TeamUtil } from 'src/team/team.util';
 
 @Injectable()
 export class PostService {
     constructor(
         @InjectRepository(CategoryEntity) private categoryRepository: Repository<CategoryEntity>,
-        @InjectRepository(PostEntity) private postRepository: Repository<PostEntity>
+        @InjectRepository(PostEntity) private postRepository: Repository<PostEntity>,
+        private teamUtil: TeamUtil
     ) {
         (async () => {
             (await this.categoryRepository.find()).forEach(e => {
@@ -25,15 +27,15 @@ export class PostService {
 
     private categoryList = {};
 
-    async postList(dto: postListDTO) {
+    async postList(dto: postListDTO, teamId?: string) {
         // 총 게시글 수
-        const totalPosts = await this.getTotalPosts(dto.category);
+        const totalPosts = await this.getTotalPosts(dto.category, teamId);
         // 현재 페이지로부터 가져오려는 게시글의 시작 id
         const startPost = (dto.page - 1) * dto.limit;
         // 총 페이지 수
         const totalPage = Math.ceil(totalPosts / dto.limit);
 
-        const posts: PostDto[] = (await this.getPostList(startPost, dto.limit, dto.category))
+        const posts: PostDto[] = (await this.getPostList(startPost, dto.limit, dto.category, teamId))
             .map(post => plainToClass(PostDto, {
                 ...post,
                 nickname: post.user.nickname,
@@ -48,7 +50,7 @@ export class PostService {
 
     async viewPost(user: User, postId: number): Promise<ViewPostDto> {
         const { postInfo, permission } = await this.postCheck(postId, user.usercode);
-
+        
         const post = plainToClass(ViewPostDto, {
             ...postInfo,
             nickname: postInfo.user.nickname,
@@ -58,12 +60,12 @@ export class PostService {
         return post;
     }
 
-    async WritePost(user: User, dto: WritePostDTO) {
+    async WritePost(user: User, dto: WritePostDTO, isTeam: boolean) {
         if (!this.categoryList[dto.category]) {
             throw new BadRequestException('Category not found');
         }
 
-        await this.savePost(user.usercode, dto);
+        await this.savePost(user.usercode, dto, isTeam? dto.teamId: undefined);
     }
   
     async modifyPost(user: User, postId: number, dto: WritePostDTO) {
@@ -92,14 +94,16 @@ export class PostService {
 
     private async savePost(
         usercode: number,
-        dto: WritePostDTO
+        dto: WritePostDTO,
+        teamId?: string
     ) {
         const { category, title, content } = dto;
         const post: PostEntity = plainToClass(PostEntity, {
             categoryId: category === 'normal'? null: category,
             title,
             content,
-            usercode
+            usercode,
+            teamId
         });
         await this.postRepository.save(post);
     }
@@ -115,10 +119,14 @@ export class PostService {
             categoryId: category === 'normal'? null: category,
             title,
             content
-        })
+        });
     }
 
-    private async postCheck(postId: number, usercode: number) {
+    private async postCheck(
+        postId: number,
+        usercode: number,
+        teamId?: string
+    ) {
         const postInfo = await this.postRepository.findOne({
             relations: ['user'],
             select: {
@@ -134,6 +142,16 @@ export class PostService {
         if (!postInfo) {
             throw new NotFoundException('Post not found');
         }
+        // 팀 전용 게시글이면서 해당 팀에 가입되어있지 않다면
+        if (
+            postInfo.teamId 
+            && (
+                postInfo.teamId !== teamId 
+                && (await this.teamUtil.getTeamAndMember(postInfo.teamId, usercode)).member
+            )
+        ) {
+            throw new NotFoundException('Post not found');
+        }
         return {
             postInfo,
             permission: postInfo.usercode === usercode
@@ -141,11 +159,15 @@ export class PostService {
     }
 
     // 총 게시물 갯수 반환
-    private async getTotalPosts(category: string): Promise<number> {
+    private async getTotalPosts(
+        category: string,
+        teamId?: string
+    ): Promise<number> {
         return await this.postRepository.count({
             where: {
                 deleted: false,
-                categoryId: this.getCategoryOption(category)
+                categoryId: this.getCategoryOption(category),
+                teamId: teamId === undefined? IsNull(): teamId
             }
         });
     }
@@ -153,7 +175,8 @@ export class PostService {
     private async getPostList(
         startPost: number,
         limit: number,
-        category: string
+        category: string,
+        teamId?: string
     ): Promise<PostEntity[]> {
         return await this.postRepository.find({
             relations: ['user'],
@@ -164,7 +187,8 @@ export class PostService {
             },
             where: {
                 deleted: false,
-                categoryId: this.getCategoryOption(category)
+                categoryId: this.getCategoryOption(category),
+                teamId: teamId === undefined? IsNull(): teamId
             },
             take: limit,
             skip: startPost,

@@ -4,7 +4,6 @@ import { ChatService } from 'src/chat/chat.service';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
 import { createChatRoomDTO } from 'src/chat/dto/create-chat-room.dto';
-import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
 import { getChatListDTO } from 'src/chat/dto/get-chatlist.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';

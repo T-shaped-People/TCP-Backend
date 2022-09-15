@@ -14,4 +14,8 @@ export class postListDTO {
     @IsOptional()
     @IsString()
     category: string = 'all';
+    
+    @IsOptional()
+    @IsString()
+    teamId: string;
 }

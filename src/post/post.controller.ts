@@ -4,6 +4,7 @@ import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
 import { postListDTO } from 'src/post/dto/request/post-list.dto';
 import { WritePostDTO } from 'src/post/dto/request/write-post.dto';
+import { TeamGuard } from 'src/team/team.guard';
 import { PostService } from './post.service';
 
 @UseGuards(JwtAuthGuard)
@@ -11,41 +12,61 @@ import { PostService } from './post.service';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @Get()
-  postList(@Query() dto: postListDTO) {
-    return this.postService.postList(dto);
-  }
+    @Get()
+    postList(
+        @Query() dto: postListDTO
+    ) {
+        return this.postService.postList(dto);
+    }
 
-  @Get(':postId')
-  viewPost(
-    @GetUser() user: User,
-    @Param('postId') postId: number
-  ) {
-    return this.postService.viewPost(user, postId);
-  }
+    @Get('team')
+    @UseGuards(TeamGuard)
+    teamPostList(
+        @Query() dto: postListDTO,
+        @Query('teamId') teamId: string
+    ) {
+        return this.postService.postList(dto, teamId);
+    }
 
-  @Post()
-  writePost(
-    @GetUser() user: User,
-    @Body() dto: WritePostDTO
-  ) {
-    return this.postService.WritePost(user, dto);
-  }
+    @Get(':postId')
+    viewPost(
+        @GetUser() user: User,
+        @Param('postId') postId: number
+    ) {
+        return this.postService.viewPost(user, postId);
+    }
 
-  @Put(':postId')
-  modifyPost(
-    @GetUser() user: User,
-    @Body() dto: WritePostDTO,
-    @Param('postId') postId: number
-  ) {
-    return this.postService.modifyPost(user, postId, dto);
-  }
+    @Post()
+    writePost(
+        @GetUser() user: User,
+        @Body() dto: WritePostDTO
+    ) {
+        return this.postService.WritePost(user, dto, false);
+    }
 
-  @Delete(':postId')
-  deletePost(
-    @GetUser() user: User,
-    @Param('postId') postId: number
-  ) {
-    return this.postService.deletePost(user, postId);
-  }
+    @Post('team')
+    @UseGuards(TeamGuard)
+    writeTeamPost(
+        @GetUser() user: User,
+        @Body() dto: WritePostDTO
+    ) {
+        return this.postService.WritePost(user, dto, true);
+    }
+
+    @Put(':postId')
+    modifyPost(
+        @GetUser() user: User,
+        @Body() dto: WritePostDTO,
+        @Param('postId') postId: number
+    ) {
+        return this.postService.modifyPost(user, postId, dto);
+    }
+
+    @Delete(':postId')
+    deletePost(
+        @GetUser() user: User,
+        @Param('postId') postId: number
+    ) {
+        return this.postService.deletePost(user, postId);
+    }
 }
