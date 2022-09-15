@@ -11,6 +11,7 @@ import { GetTodoDTO } from './dto/request/view-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { GetMentionedUserDTO } from './dto/request/view-mentioned-user.dto';
+import { ModifyCompleteTodoDTO } from './dto/request/update-todo.dto';
 
 @Injectable()
 export class TodoService {
@@ -169,5 +170,18 @@ export class TodoService {
     
         if (mentionedUser === null) throw new NotFoundException('Not found mentioned user')
         return mentionedUser;
+    }
+
+    async ModifyCompleteTodo(user: User, dto: ModifyCompleteTodoDTO) {
+        const { todoId, teamId } = dto;
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+
+        await this.todoRepository.update({
+            id: todoId
+        }, {
+            completed: true
+        })
     }
 }

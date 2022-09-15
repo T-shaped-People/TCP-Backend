@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get, Param, Put } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
@@ -7,6 +7,7 @@ import { GetTodoDTO } from './dto/request/view-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoService } from './todo.service';
+import { ModifyCompleteTodoDTO } from './dto/request/update-todo.dto';
 
 
 @UseGuards(JwtAuthGuard)
@@ -28,6 +29,14 @@ export class TodoController {
         @Body() dto: MentionDTO
     ) {
         return this.todoservice.MentionTodo(user, dto);
+    }
+
+    @Put('modify/:teamId/:todoId')
+    modifyCompleteTodo(
+        @GetUser() user: User,
+        @Param() dto: ModifyCompleteTodoDTO
+    ) {
+        return this.todoservice.ModifyCompleteTodo(user, dto);
     }
 
     @Get(':teamId')
