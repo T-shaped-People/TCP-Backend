@@ -18,10 +18,6 @@ export class AlarmService {
     async ViewAlarm(user: User, dto: ViewAlarmDTO) {
         const { teamId } = dto;
         const { usercode } = user;
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, usercode);
-        if (teamInfo === null) throw new NotFoundException('Team not found');
-        if (memberInfo === null) throw new NotFoundException('Not joined team');
-
         const alarms: AlarmDTO[] = (await this.getAlarm(teamId, usercode))
             .map(alarm => plainToClass(AlarmDTO, {
             ...alarm,
