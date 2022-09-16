@@ -1,9 +1,8 @@
-import { IsDate, IsString, IsNotEmpty } from "class-validator";
+import { IsDate, IsString } from "class-validator";
 
 export class CreateTeamDto {
 
     @IsString()
-    @IsNotEmpty()
     teamName: string;
 
     @IsString()

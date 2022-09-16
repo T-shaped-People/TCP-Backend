@@ -21,12 +21,8 @@ export class TodoService {
         private teamUtil: TeamUtil
     ) {}
 
-    async ViewTodo(user: User, dto: GetTodoDTO, getRange: number) {
+    async ViewTodo(dto: GetTodoDTO, getRange: number) {
         const { teamId } = dto;
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
-        if (teamInfo === null) throw new NotFoundException('Team not found');
-        if (memberInfo === null) throw new NotFoundException('Not joined team');
-
         const todos: TodoDto[] = (await this.getTodoList(teamId, getRange))
             .map(todo => plainToClass(TodoDto, {
             ...todo,
@@ -132,10 +128,7 @@ export class TodoService {
     }
 
     async MentionTodo(user: User, dto: MentionDTO): Promise<number> {
-        const { teamId, mentionUsercode, todoId } = dto;
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
-        if (teamInfo === null) throw new NotFoundException('Team not found');
-        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        const { mentionUsercode, todoId } = dto;
         if (mentionUsercode === user.usercode) throw new BadRequestException('Can\'t mention on myself');
         const mentionUser = await this.userRepository.findOneBy({
             usercode: dto.mentionUsercode
@@ -150,12 +143,8 @@ export class TodoService {
         return dto.mentionUsercode;
     }
 
-    async ViewMentionedUserInfo(user: User, dto: GetMentionedUserDTO) {
-        const { teamId, id } = dto;
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
-        if (teamInfo === null) throw new NotFoundException('Team not found');
-        if (memberInfo === null) throw new NotFoundException('Not joined team');
-
+    async ViewMentionedUserInfo(dto: GetMentionedUserDTO) {
+        const { id } = dto;
         const TodoQb = await this.todoRepository
         .createQueryBuilder()
         .select("mention")
@@ -173,10 +162,7 @@ export class TodoService {
     }
 
     async ModifyCompleteTodo(user: User, dto: ModifyCompleteTodoDTO) {
-        const { todoId, teamId } = dto;
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
-        if (teamInfo === null) throw new NotFoundException('Team not found');
-        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        const { todoId } = dto;
         const ModifyTodo = await this.todoRepository.findOne({
             select: {
                 usercode: true

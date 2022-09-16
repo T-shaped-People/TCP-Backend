@@ -8,6 +8,7 @@ import { MentionDTO } from './dto/request/mention.dto';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoService } from './todo.service';
 import { ModifyCompleteTodoDTO } from './dto/request/update-todo.dto';
+import { TeamGuard } from 'src/team/team.guard';
 
 
 @UseGuards(JwtAuthGuard)
@@ -23,6 +24,7 @@ export class TodoController {
         return this.todoservice.UploadTodo(user, dto);
     }
 
+    @UseGuards(TeamGuard)
     @Post('mention') 
     mentionTodo(
         @GetUser() user: User,
@@ -31,6 +33,7 @@ export class TodoController {
         return this.todoservice.MentionTodo(user, dto);
     }
 
+    @UseGuards(TeamGuard)
     @Put('modify/:teamId/:todoId')
     modifyCompleteTodo(
         @GetUser() user: User,
@@ -39,23 +42,27 @@ export class TodoController {
         return this.todoservice.ModifyCompleteTodo(user, dto);
     }
 
+    @UseGuards(TeamGuard)
     @Get(':teamId')
-    viewTodo(@GetUser() user: User, @Param() dto: GetTodoDTO) {
-        return this.todoservice.ViewTodo(user, dto, 0);
+    viewTodo(@Param() dto: GetTodoDTO) {
+        return this.todoservice.ViewTodo(dto, 0);
     }
 
+    @UseGuards(TeamGuard)
     @Get('completed/:teamId')
-    viewCompletedTodo(@GetUser() user: User, @Param() dto: GetTodoDTO) {
-        return this.todoservice.ViewTodo(user, dto, 1);
+    viewCompletedTodo(@Param() dto: GetTodoDTO) {
+        return this.todoservice.ViewTodo(dto, 1);
     }
 
+    @UseGuards(TeamGuard)
     @Get('Incompleted/:teamId')
-    viewIncompletedTodo(@GetUser() user: User, @Param() dto: GetTodoDTO) {
-        return this.todoservice.ViewTodo(user, dto, 2);
+    viewIncompletedTodo(@Param() dto: GetTodoDTO) {
+        return this.todoservice.ViewTodo(dto, 2);
     }
 
+    @UseGuards(TeamGuard)
     @Get('mention/:teamId/:id')
-    getMentionUserInfo(@GetUser() user: User, @Param() dto: GetMentionedUserDTO) {
-        return this.todoservice.ViewMentionedUserInfo(user, dto);
+    getMentionUserInfo(@Param() dto: GetMentionedUserDTO) {
+        return this.todoservice.ViewMentionedUserInfo(dto);
     }
 }
