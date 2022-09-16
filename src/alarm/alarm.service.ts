@@ -15,7 +15,7 @@ export class AlarmService {
         @InjectRepository(TodoEntity) private todoRepository: Repository<TodoEntity>,
     ) {}
 
-    async ViewAlarm(user: User, dto: ViewAlarmDTO) {
+    async ViewAlarm(user: User, dto: ViewAlarmDTO): Promise<AlarmDTO[]> {
         const { teamId } = dto;
         const { usercode } = user;
         const alarms: AlarmDTO[] = (await this.getAlarm(teamId, usercode))
@@ -25,7 +25,7 @@ export class AlarmService {
         return alarms;
     }
 
-    private async getAlarm(teamId: string, usercode: number) {
+    private async getAlarm(teamId: string, usercode: number): Promise<TodoEntity[]> {
         return this.todoRepository.find({
             relations: {
                 team: true

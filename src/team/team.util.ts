@@ -12,7 +12,7 @@ export class TeamUtil {
     ) {}
 
     // 팀 정보를 가져오는 함수
-    async getTeam(teamId: string) : Promise<TeamEntity> {
+    async getTeam(teamId: string): Promise<TeamEntity> {
         const teamInfo = await this.teamRepository.findOne({
             relations: {
                 leader: true,
@@ -23,7 +23,6 @@ export class TeamUtil {
             }
         });
         if (!teamInfo) return null;
-
         return teamInfo;
     }
     

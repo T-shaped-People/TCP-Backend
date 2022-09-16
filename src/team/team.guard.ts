@@ -18,7 +18,3 @@ export class TeamGuard implements CanActivate {
         return true;
   }
 }
-
-// const validateRequest = (req: any) => {
-//     return req;
-// }
