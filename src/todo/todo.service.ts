@@ -6,7 +6,6 @@ import { getConnection, Repository, TreeRepositoryUtils } from 'typeorm';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoDto } from './dto/todo.dto';
 import { TodoEntity } from './entities/todo.entity';
-import { TeamUtil } from 'src/team/team.util';
 import { GetTodoDTO } from './dto/request/view-todo.dto';
 import { MentionDTO } from './dto/request/mention.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
@@ -18,7 +17,6 @@ export class TodoService {
     constructor(
         @InjectRepository(TodoEntity) private todoRepository: Repository<TodoEntity>,
         @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
-        private teamUtil: TeamUtil
     ) {}
 
     async ViewTodo(dto: GetTodoDTO, getRange: number) {

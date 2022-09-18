@@ -9,6 +9,7 @@ import { DrawingModule } from './drawing/drawing.module';
 import { ChatModule } from './chat/chat.module';
 import { TodoModule } from './todo/todo.module';
 import { AlarmModule } from './alarm/alarm.module';
+import { CalendarModule } from './calendar/calendar.module';
 
 import * as winston from 'winston';
 import {
@@ -51,7 +52,8 @@ import {
     DrawingModule,
     ChatModule,
     TodoModule,
-    AlarmModule],
+    AlarmModule,
+    CalendarModule],
   controllers: [],
 })
 export class AppModule {}

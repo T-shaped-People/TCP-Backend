@@ -11,13 +11,12 @@ import { ModifyCompleteTodoDTO } from './dto/request/update-todo.dto';
 import { TeamGuard } from 'src/team/team.guard';
 import { TodoEntity } from './entities/todo.entity';
 
-
+@UseGuards(TeamGuard)
 @UseGuards(JwtAuthGuard)
 @Controller('todo')
 export class TodoController {
     constructor(private readonly todoservice: TodoService) {}
 
-    @UseGuards(TeamGuard)
     @Post('upload')
     uploadTodo(
         @GetUser() user: User,
@@ -26,7 +25,6 @@ export class TodoController {
         return this.todoservice.UploadTodo(user, dto);
     }
 
-    @UseGuards(TeamGuard)
     @Post('mention') 
     mentionTodo(
         @GetUser() user: User,
@@ -35,7 +33,6 @@ export class TodoController {
         return this.todoservice.MentionTodo(user, dto);
     }
 
-    @UseGuards(TeamGuard)
     @Put('modify/:teamId/:todoId')
     modifyCompleteTodo(
         @GetUser() user: User,
@@ -44,25 +41,21 @@ export class TodoController {
         return this.todoservice.ModifyCompleteTodo(user, dto);
     }
 
-    @UseGuards(TeamGuard)
     @Get(':teamId')
     viewTodo(@Param() dto: GetTodoDTO) {
         return this.todoservice.ViewTodo(dto, 0);
     }
 
-    @UseGuards(TeamGuard)
     @Get('completed/:teamId')
     viewCompletedTodo(@Param() dto: GetTodoDTO) {
         return this.todoservice.ViewTodo(dto, 1);
     }
 
-    @UseGuards(TeamGuard)
     @Get('Incompleted/:teamId')
     viewIncompletedTodo(@Param() dto: GetTodoDTO) {
         return this.todoservice.ViewTodo(dto, 2);
     }
 
-    @UseGuards(TeamGuard)
     @Get('mention/:teamId/:id')
     getMentionUserInfo(@Param() dto: GetMentionedUserDTO) {
         return this.todoservice.ViewMentionedUserInfo(dto);

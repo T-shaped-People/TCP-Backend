@@ -7,6 +7,8 @@ import { TeamService } from './team.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import { CreateTeamDto } from 'src/team/dto/request/create-team.dto';
+import { TeamGuard } from './team.guard';
+import { LeavingTeamDTO } from './dto/leaving-team.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('team')
@@ -33,6 +35,7 @@ export class TeamController {
         return this.teamService.getTeamMemberList(teamId);
     }
 
+    @UseGuards(TeamGuard)
     @Post()
     createTeam(
         @GetUser() user: User,
@@ -60,6 +63,7 @@ export class TeamController {
         return this.teamService.createTeamCode(user, teamId);
     }
     
+    @UseGuards(TeamGuard)
     @Delete(':teamId')
     deleteTeam(
         @GetUser() user: User,
@@ -77,5 +81,16 @@ export class TeamController {
         this.logger.log('DEL : 멤버 삭제 실행');
         this.logger.log(dto);
         return this.teamService.deleteMember(user, dto);
+    }
+
+    @UseGuards(TeamGuard)
+    @Delete('member/quit/:teamId')
+    leavingTeam(
+        @GetUser() user: User,
+        @Param() dto: LeavingTeamDTO
+    ) {
+        this.logger.log('DEL: 팀 탈퇴 실행');
+        this.logger.log(dto);
+        return this.teamService.leavingTeam(user, dto);
     }
 }
