@@ -104,12 +104,15 @@ export class TodoService {
     }
 
     async UploadTodo(user: User, dto: UploadTodoDTO) {
-        const { teamId, todo } = dto;
-        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
-        if (teamInfo === null) throw new NotFoundException('Team not found');
-        if (memberInfo === null) throw new NotFoundException('Not joined team');
         await this.saveTodo(user.usercode, dto);
-        return todo;
+        return await this.todoRepository.findOne({
+            where: {
+                usercode: user.usercode
+            },
+            order: {
+                id: 'DESC'
+            }
+        });
     }
     
     private async saveTodo(

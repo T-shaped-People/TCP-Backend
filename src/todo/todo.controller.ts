@@ -9,6 +9,7 @@ import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoService } from './todo.service';
 import { ModifyCompleteTodoDTO } from './dto/request/update-todo.dto';
 import { TeamGuard } from 'src/team/team.guard';
+import { TodoEntity } from './entities/todo.entity';
 
 
 @UseGuards(JwtAuthGuard)
@@ -16,11 +17,12 @@ import { TeamGuard } from 'src/team/team.guard';
 export class TodoController {
     constructor(private readonly todoservice: TodoService) {}
 
+    @UseGuards(TeamGuard)
     @Post('upload')
     uploadTodo(
         @GetUser() user: User,
         @Body() dto: UploadTodoDTO
-    ): Promise<string> {
+    ): Promise<TodoEntity> {
         return this.todoservice.UploadTodo(user, dto);
     }
 
