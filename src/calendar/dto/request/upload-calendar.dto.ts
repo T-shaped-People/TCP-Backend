@@ -1,12 +1,13 @@
-import { IsDate, IsString } from "class-validator";
+import { IsString } from "class-validator";
+import { IsOnlyDate } from "src/calendar/isOnlyDate.decorator";
 
 export class UploadCalendarDTO {
 
     @IsString()
     teamId: string;
 
-    @IsDate()
-    date: Date;
+    @IsOnlyDate()
+    date: string;
 
     @IsString()
     content: string;

@@ -1,8 +1,9 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, JoinColumn, ManyToOne, CreateDateColumn, Unique } from 'typeorm';
 import { TeamEntity } from 'src/team/entities/team.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('calendar')
+@Unique(['date'])
 export class CalendarEntity {
 
     @PrimaryGeneratedColumn('increment')
