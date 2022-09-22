@@ -13,6 +13,7 @@ import { createChatRoomDTO } from 'src/chat/dto/create-chat-room.dto';
 import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
 import { getChatListDTO } from 'src/chat/dto/get-chatlist.dto';
 import { Chat } from 'src/chat/chat';
+import { MemberEntity } from 'src/team/entities/member.entity';
 
 @Injectable()
 export class ChatService {
@@ -21,6 +22,20 @@ export class ChatService {
         @InjectRepository(ChatRoomEntity) private chatRoomRepository: Repository<ChatRoomEntity>,
         private teamUtil: TeamUtil
     ) {}
+
+    async getRoomListByUser(user: User): Promise<ChatRoomEntity[]> {
+        return this.chatRoomRepository.createQueryBuilder('c')
+            .select([
+                'c.id id',
+                'c.teamId teamId',
+                'c.title title',
+                'c.createdAt createdAt'
+            ])
+            .from('member', 'm')
+            .where('m.usercode = :usercode', {usercode: 1})
+            .andWhere('m.teamId = c.teamId')
+            .getRawMany<ChatRoomEntity>()
+    }
 
     async getChatRoom(teamId: string, user: User, roomId: string):Promise<ChatRoomEntity> {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);

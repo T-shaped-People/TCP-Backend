@@ -11,8 +11,17 @@ import { LoggerService } from '@nestjs/common';
 @UseGuards(JwtAuthGuard)
 @Controller('chat')
 export class ChatController {
-    constructor(private readonly chatService: ChatService,
-        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
+    constructor(
+        private readonly chatService: ChatService,
+        @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService
+    ) {}
+
+    @Get('room')
+    getChatRoomList(
+        @GetUser() user: User
+    ) {
+        return this.chatService.getRoomListByUser(user);
+    }
 
     @Get(':teamId/:roomId/:startChatId')
     getChatList(
