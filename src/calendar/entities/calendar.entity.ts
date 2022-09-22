@@ -3,7 +3,7 @@ import { TeamEntity } from 'src/team/entities/team.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('calendar')
-@Unique(['date'])
+@Unique(['startDate', 'endDate'])
 export class CalendarEntity {
 
     @PrimaryGeneratedColumn('increment')
@@ -23,11 +23,16 @@ export class CalendarEntity {
 
     @Column({nullable: false, length: 32})
     teamId: string;
-    
+
     @Column({
         type: Date
     })
-    date: Date;
+    startDate: Date;
+
+    @Column({
+        type: Date
+    })
+    endDate: Date;
 
     @Column({
         type: 'text'

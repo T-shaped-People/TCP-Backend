@@ -7,7 +7,10 @@ export class UploadCalendarDTO {
     teamId: string;
 
     @IsOnlyDate()
-    date: string;
+    startDate: string;
+
+    @IsOnlyDate()
+    endDate: string;
 
     @IsString()
     content: string;

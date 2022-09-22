@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, InternalServerErrorException, I
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from '@nestjs/class-transformer';
 import { User } from 'src/auth/user';
-import { getConnection, Repository, TreeRepositoryUtils } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UploadTodoDTO } from './dto/request/upload-todo.dto';
 import { TodoDto } from './dto/todo.dto';
 import { TodoEntity } from './entities/todo.entity';
@@ -19,7 +19,7 @@ export class TodoService {
         @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
     ) {}
 
-    async ViewTodo(dto: GetTodoDTO, getRange: number) {
+    async ViewTodo(dto: GetTodoDTO, getRange: number): Promise<TodoDto[]> {
         const { teamId } = dto;
         const todos: TodoDto[] = (await this.getTodoList(teamId, getRange))
             .map(todo => plainToClass(TodoDto, {
@@ -101,7 +101,7 @@ export class TodoService {
         }
     }
 
-    async UploadTodo(user: User, dto: UploadTodoDTO) {
+    async UploadTodo(user: User, dto: UploadTodoDTO): Promise<TodoEntity> {
         await this.saveTodo(user.usercode, dto);
         return await this.todoRepository.findOne({
             where: {
@@ -113,10 +113,7 @@ export class TodoService {
         });
     }
     
-    private async saveTodo(
-        usercode: number,
-        dto: UploadTodoDTO
-    ) {
+    private async saveTodo (usercode: number, dto: UploadTodoDTO): Promise<void> {
         const { teamId, title, todo, endAt } = dto;
         const Todo: TodoEntity = plainToClass(TodoEntity, {
             teamId,
@@ -144,25 +141,20 @@ export class TodoService {
         return dto.mentionUsercode;
     }
 
-    async ViewMentionedUserInfo(dto: GetMentionedUserDTO) {
+    async ViewMentionedUserInfo(dto: GetMentionedUserDTO): Promise<UserEntity> {
         const { id } = dto;
-        const TodoQb = await this.todoRepository
-        .createQueryBuilder()
-        .select("mention")
-        .where("id = :id", {id: id})
-        .getRawOne()
-
-        const mentionedUser = await this.userRepository
-        .createQueryBuilder()
-        .select("*")
-        .where("usercode = " + TodoQb.mention)
-        .getRawOne()
-    
+        const todoSubquery = await this.todoRepository.findOneBy({
+            id: id,
+        })
+        if (todoSubquery === null) throw new NotFoundException('Todo not found');
+        const mentionedUser = await this.userRepository.findOneBy({
+            usercode: todoSubquery.mention
+        })
         if (mentionedUser === null) throw new NotFoundException('Not found mentioned user')
         return mentionedUser;
     }
 
-    async ModifyCompleteTodo(user: User, dto: ModifyCompleteTodoDTO) {
+    async ModifyCompleteTodo(user: User, dto: ModifyCompleteTodoDTO): Promise<void> {
         const { todoId } = dto;
         const ModifyTodo = await this.todoRepository.findOne({
             select: {

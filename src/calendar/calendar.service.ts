@@ -17,16 +17,17 @@ export class CalendarService {
     }
  
     async saveOrUpdateCalendar(usercode: number, dto: UploadCalendarDTO): Promise<void> {
-        const { teamId, date, content } = dto;
+        const { teamId, startDate, endDate , content } = dto;
 
         const Calendar: CalendarEntity = plainToClass(CalendarEntity, {
             teamId,
-            date,
+            startDate,
+            endDate,
             usercode,
             content
         });
         // date 칼럼에 중복이 일어나면 update 아니면 insert
-        await this.calendarRepository.upsert(Calendar, ['date']);
+        await this.calendarRepository.upsert(Calendar, ['startDate', 'endDate']);
     }
 
     async viewCalendar(dto: GetCalendarDTO): Promise<CalendarEntity[]> {
@@ -41,10 +42,10 @@ export class CalendarService {
         return await this.calendarRepository.find({
             where: {
                 teamId: teamId,
-                date: MoreThanOrEqual(initializedTodayDate)
+                startDate : MoreThanOrEqual(initializedTodayDate)
             },
             order: {
-                date: "ASC"  
+                startDate: "ASC"  
             }
         });
     }
