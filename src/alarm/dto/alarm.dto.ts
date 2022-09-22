@@ -3,7 +3,13 @@ import { Expose } from "@nestjs/class-transformer";
 export class AlarmDTO {
     
     @Expose()
-    completed: true
+    alarmCategory: true
+
+    @Expose()
+    usercode: true
+
+    @Expose()
+    content: true
 
     @Expose()
     createdAt: true

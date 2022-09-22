@@ -4,6 +4,7 @@ import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
 import { TeamGuard } from 'src/team/team.guard';
 import { AlarmService } from './alarm.service';
+import { AlarmDTO } from './dto/alarm.dto';
 import { ViewAlarmDTO } from './dto/request/view-alarm.dto';
 
 @UseGuards(JwtAuthGuard)
@@ -13,7 +14,7 @@ export class AlarmController {
     
     @Get(':teamId')
     @UseGuards(TeamGuard)
-    viewAlarm(@GetUser() user: User, @Param() dto: ViewAlarmDTO) {
+    viewAlarm(@GetUser() user: User, @Param() dto: ViewAlarmDTO): Promise<AlarmDTO[]> {
         return this.alarmservice.ViewAlarm(user, dto);
     }
 }

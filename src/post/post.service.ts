@@ -98,6 +98,9 @@ export class PostService {
         teamId?: string
     ) {
         const { category, title, content } = dto;
+        if (teamId === undefined && category != 'normal') {
+            throw new BadRequestException('Non-normal categories require teamid');
+        }
         const post: PostEntity = plainToClass(PostEntity, {
             categoryId: category === 'normal'? null: category,
             title,

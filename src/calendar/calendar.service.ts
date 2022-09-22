@@ -26,8 +26,8 @@ export class CalendarService {
             usercode,
             content
         });
-        // date 칼럼에 중복이 일어나면 update 아니면 insert
-        await this.calendarRepository.upsert(Calendar, ['startDate', 'endDate']);
+        // date와 content 칼럼에 중복이 일어나면 update 아니면 insert
+        await this.calendarRepository.upsert(Calendar, ['startDate', 'endDate', 'content']);
     }
 
     async viewCalendar(dto: GetCalendarDTO): Promise<CalendarEntity[]> {

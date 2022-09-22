@@ -6,10 +6,12 @@ import { TeamModule } from 'src/team/team.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TodoEntity } from 'src/todo/entities/todo.entity';
 import { ClassTransformer } from '@nestjs/class-transformer';
+import { CategoryEntity } from 'src/post/entities/category.entity';
+import { PostEntity } from 'src/post/entities/post.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TodoEntity]),
+    TypeOrmModule.forFeature([TodoEntity, CategoryEntity, PostEntity]),
     ClassTransformer,
     TeamModule
   ],
