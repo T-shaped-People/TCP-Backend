@@ -6,6 +6,9 @@ export class AlarmDTO {
     alarmCategory: true
 
     @Expose()
+    id: true
+
+    @Expose()
     usercode: true
 
     @Expose()
