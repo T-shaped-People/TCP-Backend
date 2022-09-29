@@ -40,7 +40,7 @@ export class AlarmService {
 
     private async getAlarmNotice(teamId: string) {
 
-        const NoticeCategory = await this.categoryRepository.findBy({name: 'notice'});
+        const NoticeCategory = await this.categoryRepository.findBy({id: 'notice'});
         console.log(NoticeCategory)
         if (NoticeCategory.length === 0) {
             return [{title: '공지사항 카테고리를 찾을 수 없습니다.'}];
