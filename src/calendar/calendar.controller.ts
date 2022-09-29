@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body, Get, Param, Put } from '@nestjs/common';
+import { Controller, UseGuards, Post, Body, Get, Param, Put, Delete } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
@@ -39,5 +39,13 @@ export class CalendarController {
         @Body() dto: UpdateCalendarDTO
     ): Promise<void> {
         return this.calendarservice.updateCalendar(user, dto);
+    }
+
+    @Delete(':id')
+    deleteCalendar(
+        @GetUser() user: User,
+        @Param('id') id: number
+    ): Promise<void> {
+        return this.calendarservice.deleteCalendar(user, id);
     }
 }
