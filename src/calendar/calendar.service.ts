@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from '@nestjs/class-transformer';
 import { User } from 'src/auth/user';
@@ -6,6 +6,7 @@ import { MoreThanOrEqual, Repository } from 'typeorm';
 import { UploadCalendarDTO } from './dto/request/upload-calendar.dto';
 import { CalendarEntity } from './entities/calendar.entity';
 import { GetCalendarDTO } from './dto/request/view-calandar.dto';
+import { UpdateCalendarDTO } from 'src/calendar/dto/request/update-calendar.dto';
 
 @Injectable()
 export class CalendarService {
@@ -27,7 +28,7 @@ export class CalendarService {
             content
         });
         // date와 content 칼럼에 중복이 일어나면 update 아니면 insert
-        await this.calendarRepository.upsert(Calendar, ['startDate', 'endDate', 'content']);
+        await this.calendarRepository.upsert(Calendar, ['teamId', 'startDate', 'endDate', 'content']);
     }
 
     async viewCalendar(dto: GetCalendarDTO): Promise<CalendarEntity[]> {
@@ -48,6 +49,18 @@ export class CalendarService {
                 startDate: "ASC"  
             }
         });
+    }
+
+    async updateCalendar(user: User, dto: UpdateCalendarDTO): Promise<void> {
+        const {id, startDate, endDate, content} = dto;
+        const calendar: CalendarEntity = await this.calendarRepository.findOne({
+            where: {id}
+        });
+        if (calendar.usercode !== user.usercode) throw new ForbiddenException('No permission');
+        calendar.startDate = new Date(startDate);
+        calendar.endDate = new Date(endDate);
+        calendar.content = content;
+        this.calendarRepository.save(calendar);
     }
 
     private initTodayDate(): Date {

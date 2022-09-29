@@ -34,7 +34,7 @@ export class ChatService {
             .from('member', 'm')
             .where('m.usercode = :usercode', {usercode: 1})
             .andWhere('m.teamId = c.teamId')
-            .getRawMany<ChatRoomEntity>()
+            .getRawMany<ChatRoomEntity>();
     }
 
     async getChatRoom(teamId: string, user: User, roomId: string):Promise<ChatRoomEntity> {
