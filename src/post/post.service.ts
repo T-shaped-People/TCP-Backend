@@ -145,9 +145,10 @@ export class PostService {
         if (!postInfo) {
             throw new NotFoundException('Post not found');
         }
-        // 팀 전용 게시글이면서 해당 팀에 가입되어있지 않다면
+        // 다른 사람이 작성한 글이고 팀 전용 게시글이면서 해당 팀에 가입되어있지 않다면
         if (
-            postInfo.teamId 
+            postInfo.usercode !== usercode
+            && postInfo.teamId 
             && (
                 postInfo.teamId !== teamId 
                 && (await this.teamUtil.getTeamAndMember(postInfo.teamId, usercode)).member

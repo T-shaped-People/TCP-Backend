@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Post, Res, UseGuards, Inject, Query } from '@nestjs/common';
+import { Controller, Get, Res, UseGuards, Inject, Query } from '@nestjs/common';
 import { Response } from 'express';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/getUser.decorator';
 import { User } from 'src/auth/user';
-import { CreateUserOAuthDTO } from 'src/user/dto/create-user-oauth.dto';
 import { UserService } from './user.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
@@ -14,13 +13,13 @@ export class UserController {
                 @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   @Get('oauth/bsm')
-  BSMOAuth(
+  oauth(
     @Res({passthrough: true}) res: Response,
-    @Query() dto: CreateUserOAuthDTO
+    @Query('code') authCode: string
   ) {
     this.logger.log('POST : 로그인 시작')
-    this.logger.log(dto);
-    return this.userService.BSMOAuth(res, dto);
+    this.logger.log(`authCode: ${authCode}`);
+    return this.userService.oauth(res, authCode);
   }
 
   @Get('/')

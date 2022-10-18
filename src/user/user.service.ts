@@ -1,155 +1,130 @@
-import { BadRequestException, ConsoleLogger, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
-import { HttpService } from '@nestjs/axios';
-import { lastValueFrom } from 'rxjs';
-import { plainToClass } from '@nestjs/class-transformer';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto'
 
-import { CreateUserOAuthDTO } from 'src/user/dto/create-user-oauth.dto';
-import { BSMOAuthCodeDTO } from 'src/user/dto/bsm-code.dto';
-import { BSMOAuthResourceDTO } from 'src/user/dto/bsm-resource.dto';
+import { UserSignUpRequest } from 'src/user/dto/request/userSignUpRequest';
 import { TokenEntity } from 'src/auth/entities/token.entity';
 import { User } from 'src/auth/user';
+import BsmOauth, { BsmOauthError, BsmOauthErrorType, BsmOauthUserRole, StudentResource, TeacherResource } from 'bsm-oauth';
 
-const { CLIENT_ID, CLIENT_SECRET, SECRET_KEY } = process.env;
+const { BSM_OAUTH_CLIENT_ID, BSM_OAUTH_CLIENT_SECRET, SECRET_KEY } = process.env;
 
 @Injectable()
 export class UserService {
-  constructor(
-    private httpService: HttpService,
-    private jwtService: JwtService,
-    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
-    @InjectRepository(TokenEntity) private tokenRepository: Repository<TokenEntity>
-  ) {}
+    constructor(
+        private jwtService: JwtService,
+        @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
+        @InjectRepository(TokenEntity) private tokenRepository: Repository<TokenEntity>
+    ) {
+        this.bsmOauth = new BsmOauth(BSM_OAUTH_CLIENT_ID, BSM_OAUTH_CLIENT_SECRET);
+    }
   
-  private readonly getOAuthTokenURL = process.env.OAUTH_TOKEN_URL;
-  private readonly getOAuthResourceURL = process.env.OAUTH_RESOURCE_URL;
+    private bsmOauth: BsmOauth;
 
-  async BSMOAuth(
-    res: Response,
-    dto: CreateUserOAuthDTO
-  ) {
-    const { code } = dto;
+    async oauth(
+        res: Response,
+        authCode: string
+    ) {
 
-    const getTokenPayload = {
-      authcode: code,
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET
-    };
-
-    let tokenData: BSMOAuthCodeDTO;
-    try {
-      tokenData = plainToClass(BSMOAuthCodeDTO, (await lastValueFrom(this.httpService.post(this.getOAuthTokenURL, (getTokenPayload)))).data);
-    } catch (err) {
-      if (err.response.status === 404) {
-        throw new NotFoundException('Authcode not found');
-      }
-      console.log(err);
-      throw new InternalServerErrorException('OAuth Failed');
+        let resource: StudentResource | TeacherResource;
+        try {
+            resource = await this.bsmOauth.getResource(
+                await this.bsmOauth.getToken(authCode)
+            );
+        } catch (error) {
+            if (error instanceof BsmOauthError) {
+                switch (error.type) {
+                    case BsmOauthErrorType.INVALID_CLIENT: {
+                        throw new InternalServerErrorException('OAuth Failed');
+                    }
+                    case BsmOauthErrorType.AUTH_CODE_NOT_FOUND: {
+                        throw new NotFoundException('Authcode not found');
+                    }
+                    case BsmOauthErrorType.TOKEN_NOT_FOUND: {
+                        throw new NotFoundException('Token not found');
+                    }
+                }
+            }
+            throw new InternalServerErrorException('OAuth Failed');
+        }
+        
+        let userInfo = await this.getUserBycode(resource.userCode);
+        if (!userInfo) {
+            await this.saveUser({
+                code: resource.userCode,
+                nickname: resource.nickname,
+                name: resource.role === BsmOauthUserRole.STUDENT? resource.student.name: resource.teacher.name
+            });
+            userInfo = await this.getUserBycode(resource.userCode);
+            if (!userInfo) {
+                throw new NotFoundException('User not Found');
+            }
+        }
+        await this.login(res, userInfo);
+        res.redirect('http://localhost:3001/calendar');
     }
-    if (!tokenData.token) {
-      throw new NotFoundException('Authcode not found');
-    }
-    
-    const getResourcePayload = {
-      token: tokenData.token,
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET
-    };
-    let resourceData: BSMOAuthResourceDTO;
-    try {
-      resourceData = plainToClass(BSMOAuthResourceDTO, (await lastValueFrom(this.httpService.post(this.getOAuthResourceURL, (getResourcePayload)))).data.user);
-    } catch (err) {
-      if (err.response.status === 404) {
-        throw new NotFoundException('User not found');
-      }
-      console.log(err);
-      throw new InternalServerErrorException('OAuth Failed');
-    }
-    if (!resourceData.code) {
-      throw new NotFoundException('User not found');
-    }
-    
-    let userInfo = await this.getByUsercode(resourceData.code);
 
-    if (!userInfo) {
-      await this.saveUser(resourceData);
-      userInfo = await this.getByUsercode(resourceData.code);
-      if (!userInfo) {
-        throw new NotFoundException('User not Found');
-      }
+    private async login(
+        res: Response,
+        user: User
+    ) {
+        const token = this.jwtService.sign({...user}, {
+            secret: SECRET_KEY,
+            algorithm: 'HS256',
+            expiresIn: '1h'
+        });
+        const refreshToken = this.jwtService.sign({
+            refreshToken: (await this.createToken(user.usercode)).token
+        }, {
+            secret: SECRET_KEY,
+            algorithm: 'HS256',
+            expiresIn: '60d'
+        });
+        
+        res.cookie('token', token, {
+            path: '/',
+            httpOnly: true,
+            maxAge: 1000*60*60
+        });
+        res.cookie('refreshToken', refreshToken, {
+            path: '/',
+            httpOnly: true,
+            maxAge: 24*60*1000*60*60
+        });
+        return {
+            token,
+            refreshToken: refreshToken
+        }
     }
-    await this.login(res, userInfo);
-    res.redirect('http://localhost:3001/calendar');
-  }
 
-  private async login(
-    res: Response,
-    user: User
-  ) {
-    const token = this.jwtService.sign({...user}, {
-      secret: SECRET_KEY,
-      algorithm: 'HS256',
-      expiresIn: '1h'
-    });
-    const refreshToken = this.jwtService.sign({
-      refreshToken: (await this.createToken(user.usercode)).token
-    }, {
-      secret: SECRET_KEY,
-      algorithm: 'HS256',
-      expiresIn: '60d'
-    });
-    
-    res.cookie('token', token, {
-      path: '/',
-      httpOnly: true,
-      maxAge: 1000*60*60
-    });
-    res.cookie('refreshToken', refreshToken, {
-      path: '/',
-      httpOnly: true,
-      maxAge: 24*60*1000*60*60
-    });
-    return {
-      token,
-      refreshToken: refreshToken
+    private async saveUser(request: UserSignUpRequest) {
+        const user = new UserEntity();
+        user.usercode = request.code;
+        user.nickname = request.nickname;
+        user.name = request.name;
+        await this.userRepository.save(user);
     }
-  }
 
-  private async saveUser(
-    dto: BSMOAuthResourceDTO
-  ) {
-    const user = new UserEntity();
-    user.usercode = dto.code;
-    user.nickname = dto.nickname;
-    user.enrolled = dto.enrolled;
-    user.grade = dto.grade;
-    user.classNo = dto.classNo;
-    user.studentNo = dto.studentNo;
-    user.name = dto.name;
-    user.email = dto.email;
-    await this.userRepository.save(user);
-  }
+    private async getUserBycode(usercode: number): Promise<UserEntity | undefined> {
+        return this.userRepository.findOne({
+            where: {
+                usercode
+            }
+        })
+    }
 
-  private async getByUsercode(usercode: number): Promise<UserEntity | undefined> {
-    return this.userRepository.findOne({
-      where: {
-        usercode
-      }
-    })
-  }
+    private async createToken(usercode: number): Promise<TokenEntity> {
+        const refreshToken = new TokenEntity();
+        refreshToken.token = randomBytes(64).toString('hex');
+        refreshToken.usercode = usercode;
+        refreshToken.valid = true;
+        refreshToken.createdAt = new Date;
 
-  private async createToken(usercode: number): Promise<TokenEntity> {
-    const refreshToken = new TokenEntity();
-    refreshToken.token = randomBytes(64).toString('hex');
-    refreshToken.usercode = usercode;
-    refreshToken.valid = true;
-    refreshToken.createdAt = new Date;
-    await this.tokenRepository.save(refreshToken);
-    return refreshToken;
-  }
+        await this.tokenRepository.save(refreshToken);
+        return refreshToken;
+    }
 }
