@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ConsoleLogger, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from 'src/auth/user';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -59,7 +59,8 @@ export class TeamService {
         });
         if (teamInfo) throw new ConflictException('Team name already exists');
         
-        const newTeamId = getUUID().replaceAll('-', '');
+        const newTeamId = getUUID().replaceAll("/", "");
+
         const newTeam: TeamEntity = plainToClass(TeamEntity, {
             ...dto,
             name: dto.teamName,
@@ -103,7 +104,7 @@ export class TeamService {
 
     async createTeamCode(user: User, teamId: string) {
         const teamInfo = await this.teamUtil.getTeam(teamId);
-        if (teamInfo.leaderId !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (teamInfo?.leaderId !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
 
         const newCode = randomBytes(3).toString('hex');
         const newCodeEntity = plainToClass(TeamCodeEntity, {

@@ -35,7 +35,7 @@ export class CalendarEntity {
     endDate: Date;
 
     @Column({
-        type: 'text'
+        length: 150
     })
     content: string;
 }

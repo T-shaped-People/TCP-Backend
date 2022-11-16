@@ -65,7 +65,7 @@ export class UserService {
             }
         }
         await this.login(res, userInfo);
-        res.redirect('http://localhost:3001/calendar');
+        res.redirect('http://localhost:3000/calendar');
     }
 
     private async login(
