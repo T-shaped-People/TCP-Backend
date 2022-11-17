@@ -19,6 +19,7 @@ export class PostService {
         private teamUtil: TeamUtil
     ) {
         (async () => {
+            this.categoryList['normal'] = '일반';
             (await this.categoryRepository.find()).forEach(e => {
                 this.categoryList[e.id] = e.name;
             });
@@ -61,6 +62,7 @@ export class PostService {
     }
 
     async WritePost(user: User, dto: WritePostDTO, isTeam: boolean) {
+
         if (!this.categoryList[dto.category]) {
             throw new BadRequestException('Category not found');
         }

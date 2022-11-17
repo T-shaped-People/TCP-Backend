@@ -59,7 +59,7 @@ export class TeamService {
         });
         if (teamInfo) throw new ConflictException('Team name already exists');
         
-        const newTeamId = getUUID().replaceAll("/", "");
+        const newTeamId = getUUID().replaceAll("-", "");
 
         const newTeam: TeamEntity = plainToClass(TeamEntity, {
             ...dto,
