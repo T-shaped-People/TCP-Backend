@@ -101,7 +101,7 @@ export class PostService {
         dto: WritePostDTO,
         teamId?: string
     ) {
-        const { category, title, content } = dto;
+        const { category, title, content, description } = dto;
         if (teamId === undefined && category != 'normal') {
             throw new BadRequestException('Non-normal categories require teamid');
         }
@@ -109,6 +109,7 @@ export class PostService {
             categoryId: category === 'normal'? null: category,
             title,
             content,
+            description,
             usercode,
             teamId
         });
@@ -119,13 +120,14 @@ export class PostService {
         postId: number,
         dto: WritePostDTO
     ) {
-        const { category, title, content } = dto;
+        const { category, title, content, description } = dto;
         await this.postRepository.update({
             id: postId
         }, {
             categoryId: category === 'normal'? null: category,
             title,
-            content
+            content,
+            description
         });
     }
 

@@ -25,4 +25,7 @@ export class PostDto {
     
     @Expose()
     title: string;
+
+    @Expose()
+    description: string;
 }

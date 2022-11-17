@@ -60,4 +60,7 @@ export class PostEntity {
         type: 'mediumtext'
     })
     content: string;
+
+    @Column({length: 64})
+    description: string;
 }

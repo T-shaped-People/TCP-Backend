@@ -13,5 +13,9 @@ export class WritePostDTO {
 
     @IsOptional()
     @IsString()
+    description?: string;
+
+    @IsOptional()
+    @IsString()
     teamId?: string;
 }
