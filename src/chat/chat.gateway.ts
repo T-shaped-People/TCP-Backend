@@ -73,4 +73,5 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const chatInfo = await this.chatService.saveChat(userInfo, data);
         this.server.to(chatInfo.roomId).emit('chat', chatInfo);
     }
+    
 }

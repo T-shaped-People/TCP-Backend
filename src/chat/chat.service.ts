@@ -6,14 +6,12 @@ import { Repository } from 'typeorm'
 import { ChatEntity } from 'src/chat/entities/chat.entity';
 import { ChatRoomEntity } from 'src/chat/entities/chat-room.entity';
 import { TeamUtil } from 'src/team/team.util';
-import { Team } from 'src/team/team';
 
 import { v4 as getUUID } from 'uuid';
 import { createChatRoomDTO } from 'src/chat/dto/create-chat-room.dto';
 import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
 import { getChatListDTO } from 'src/chat/dto/get-chatlist.dto';
 import { Chat } from 'src/chat/chat';
-import { MemberEntity } from 'src/team/entities/member.entity';
 
 @Injectable()
 export class ChatService {
@@ -32,7 +30,7 @@ export class ChatService {
                 'c.createdAt createdAt'
             ])
             .from('member', 'm')
-            .where('m.usercode = :usercode', {usercode: 1})
+            .where('m.usercode = :usercode', {usercode: user.usercode})
             .andWhere('m.teamId = c.teamId')
             .getRawMany<ChatRoomEntity>();
     }
@@ -79,7 +77,9 @@ export class ChatService {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
-        if (memberInfo.usercode !== user.usercode && teamInfo.leaderId !== user.usercode) throw new ForbiddenException('You do not have permission for this team');
+        if (memberInfo.usercode !== user.usercode && teamInfo.leaderId !== user.usercode) {
+            throw new ForbiddenException('You do not have permission for this team');
+        }
 
         const roomInfo = await this.chatRoomRepository.findOne({where:{title: roomTitle}});
         if (roomInfo) throw new ConflictException('Chat room title already exists');
@@ -92,9 +92,7 @@ export class ChatService {
         });
         
         await this.chatRoomRepository.save(newRoom);
-        return {
-            roomId: newRoomId
-        }
+        return { roomId: newRoomId }
     }
 
     async saveChat(user: User, dto: SaveChatDTO): Promise<Chat> {

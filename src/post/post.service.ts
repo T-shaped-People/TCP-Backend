@@ -51,6 +51,8 @@ export class PostService {
 
     async viewPost(user: User, postId: number): Promise<ViewPostDto> {
         const { postInfo, permission } = await this.postCheck(postId, user.usercode);
+        postInfo.hit++;
+        this.postRepository.save(postInfo);
         
         const post = plainToClass(ViewPostDto, {
             ...postInfo,
