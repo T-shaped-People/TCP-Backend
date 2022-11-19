@@ -18,4 +18,12 @@ export class WritePostDTO {
     @IsOptional()
     @IsString()
     teamId?: string;
+
+    @IsOptional()
+    @IsString()
+    teamColor?: string;
+
+    @IsOptional()
+    @IsString()
+    field?: string;
 }

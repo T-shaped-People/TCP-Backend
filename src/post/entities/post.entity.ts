@@ -63,4 +63,11 @@ export class PostEntity {
 
     @Column({length: 64})
     description: string;
+
+    @Column({length: 16})
+    field: string;
+    
+    
+    @Column({length: 6})
+    teamColor: string;
 }

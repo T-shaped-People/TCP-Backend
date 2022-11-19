@@ -28,4 +28,10 @@ export class PostDto {
 
     @Expose()
     description: string;
+
+    @Expose()
+    field: string;
+
+    @Expose()
+    teamColor: string;
 }

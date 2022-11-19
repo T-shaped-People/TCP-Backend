@@ -101,17 +101,16 @@ export class PostService {
         dto: WritePostDTO,
         teamId?: string
     ) {
-        const { category, title, content, description } = dto;
+        const { category } = dto;
+        const categoryId = category === 'normal'? null: category;
+        delete dto.category;
         if (teamId === undefined && category != 'normal') {
             throw new BadRequestException('Non-normal categories require teamid');
         }
         const post: PostEntity = plainToClass(PostEntity, {
-            categoryId: category === 'normal'? null: category,
-            title,
-            content,
-            description,
-            usercode,
-            teamId
+            categoryId,
+            ...dto,
+            usercode
         });
         await this.postRepository.save(post);
     }
