@@ -30,7 +30,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } = {};
 
     async handleConnection(client: Socket): Promise<void> {
+
         const userInfo = await this.wsAuthUtil.authClient(client);
+
         // 인증에 실패했다면
         if (!userInfo) {
             client.emit('error', 'Unauthorized');
