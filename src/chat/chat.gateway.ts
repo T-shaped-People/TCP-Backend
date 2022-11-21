@@ -30,7 +30,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } = {};
 
     async handleConnection(client: Socket): Promise<void> {
+        console.log('test')
         const userInfo = await this.wsAuthUtil.authClient(client);
+        console.log(userInfo)
         // 인증에 실패했다면
         if (!userInfo) {
             client.emit('error', 'Unauthorized');
@@ -56,7 +58,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     async joinRoom(client: Socket, data: ChatRoomJoinDto) {
         const clientInfo = this.clients[client.id];
         if (!clientInfo?.user) return;
-        const {teamId, roomId, user} = {...data, ...clientInfo};
+        if (clientInfo.roomId) client.leave(clientInfo.roomId);
+        delete clientInfo.roomId;
+
+        const {user} = clientInfo;
+        const {teamId, roomId} = data;
         clientInfo.roomId = (await this.chatService.getRoom(user, teamId, roomId)).id;
 
         client.join(clientInfo.roomId);

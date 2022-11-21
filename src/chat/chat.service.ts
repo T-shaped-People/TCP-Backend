@@ -2,7 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { User } from 'src/auth/user';
 import { plainToClass } from '@nestjs/class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm'
+import { LessThan, Repository } from 'typeorm'
 import { ChatEntity } from 'src/chat/entities/chat.entity';
 import { ChatRoomEntity } from 'src/chat/entities/chat-room.entity';
 import { TeamUtil } from 'src/team/team.util';
@@ -75,13 +75,19 @@ export class ChatService {
                 }
             },
             where: {
-                roomId
+                roomId,
+                ...(startChatId === 0 ? {}: {id: LessThan(startChatId)})
             },
             take: 15,
-            skip: startChatId !== 0? startChatId: null
-        })
+            order: {
+                id: 'DESC'
+            }
+        });
 
-        return chatList.map(chat => (plainToClass(Chat, chat, {excludeExtraneousValues: true})));
+        return chatList.map(chat => (plainToClass(Chat, {
+            ...chat,
+            nickname: chat.user.nickname
+        }, {excludeExtraneousValues: true})));
     }
 
     async createRoom(user: User, dto: createChatRoomDTO) {
