@@ -8,7 +8,8 @@ import { ChatRoomEntity } from 'src/chat/entities/chat-room.entity';
 import { ChatEntity } from 'src/chat/entities/chat.entity';
 import { TeamModule } from 'src/team/team.module';
 import { TeamUtil } from 'src/team/team.util';
-import { MessageGateway } from './message.gateway';
+import { ChatGateway } from './chat.gateway';
+import { VoiceChatGateway } from './voiceChat.gateway';
 
 @Module({
     imports: [
@@ -19,10 +20,11 @@ import { MessageGateway } from './message.gateway';
     controllers: [ChatController],
     providers: [
         ChatService,
-        MessageGateway,
+        VoiceChatGateway,
+        ChatGateway,
         WSAuthUtil,
         TeamUtil
     ]
 })
 
-export class ChatModule {}
+export class ChatModule { }
