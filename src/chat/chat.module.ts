@@ -9,11 +9,12 @@ import { ChatEntity } from 'src/chat/entities/chat.entity';
 import { TeamModule } from 'src/team/team.module';
 import { TeamUtil } from 'src/team/team.util';
 import { ChatGateway } from './chat.gateway';
+import { VoiceRoomEntity } from './entities/voice-room.entity';
 import { VoiceChatGateway } from './voiceChat.gateway';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([ChatRoomEntity, ChatEntity]),
+        TypeOrmModule.forFeature([ChatRoomEntity, ChatEntity, VoiceRoomEntity]),
         AuthModule,
         TeamModule
     ],
