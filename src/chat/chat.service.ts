@@ -10,13 +10,16 @@ import { v4 as getUUID } from 'uuid';
 import { createChatRoomDTO } from 'src/chat/dto/request/create-chat-room.dto';
 import { SaveChatDTO } from 'src/chat/dto/request/save-chat.dto';
 import { getChatListDTO } from 'src/chat/dto/request/get-chatlist.dto';
-import { Chat } from 'src/chat/chat';
+import { Chat } from 'src/chat/chat.model';
+import { createVoiceRoomDTO } from './dto/request/create-voice-room.dto';
+import { VoiceRoomEntity } from './entities/voice-room.entity';
 
 @Injectable()
 export class ChatService {
     constructor(
         @InjectRepository(ChatEntity) private chatRepository: Repository<ChatEntity>,
         @InjectRepository(ChatRoomEntity) private chatRoomRepository: Repository<ChatRoomEntity>,
+        @InjectRepository(VoiceRoomEntity) private voiceRoomRepository: Repository<VoiceRoomEntity>,
         private teamUtil: TeamUtil
     ) {}
 
@@ -134,4 +137,28 @@ export class ChatService {
             roomId: dto.roomId
         };
     }
+
+    async createVoiceRoom(user: User, dto: createVoiceRoomDTO) {
+        const { teamId, roomTitle } = dto;
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        if (memberInfo.usercode !== user.usercode && teamInfo.leaderId !== user.usercode) {
+            throw new ForbiddenException('You do not have permission for this team');
+        }
+
+        const roomInfo = await this.voiceRoomRepository.findOne({where:{title: roomTitle}});
+        if (roomInfo) throw new ConflictException('Chat room title already exists');
+        
+        const newRoomId = getUUID().replaceAll("-", "");
+        const newRoom: ChatRoomEntity = plainToClass(VoiceRoomEntity, {
+            id: newRoomId,
+            teamId: teamId,
+            title: roomTitle
+        });
+        
+        await this.voiceRoomRepository.save(newRoom);
+        return { voiceRoomId: newRoomId }
+    }
+
 }

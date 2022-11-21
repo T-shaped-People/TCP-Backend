@@ -8,6 +8,7 @@ import { getChatListDTO } from 'src/chat/dto/request/get-chatlist.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import { getChatRoomDTO } from 'src/chat/dto/request/get-chat-room.dto';
+import { createVoiceRoomDTO } from './dto/request/create-voice-room.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('chat')
@@ -58,5 +59,15 @@ export class ChatController {
         this.logger.log('POST : 채팅방 생성 실행');
         this.logger.log(dto);
         return this.chatService.createRoom(user, dto);
+    }
+
+    @Post('voice')
+    createVoiceRoom(
+        @GetUser() user: User,
+        @Body() dto: createVoiceRoomDTO
+    ) {
+        this.logger.log('POST : 음성 채팅방 생성 실행');
+        this.logger.log(dto);
+        return this.chatService.createVoiceRoom(user, dto);
     }
 }
