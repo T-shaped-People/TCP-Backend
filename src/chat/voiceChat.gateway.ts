@@ -10,25 +10,25 @@ import { Socket } from 'socket.io';
 import { Server } from 'ws';
 import { Logger } from '@nestjs/common';
 
-@WebSocketGateway({ namespace: 'chat', cors: true, transports: ['websocket', 'polling'] })
-export class MessageGateway implements OnGatewayInit, OnGatewayDisconnect {
+@WebSocketGateway({ namespace: 'voice', cors: true, transports: ['websocket', 'polling'] })
+export class VoiceChatGateway implements OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
 
+    // 현재 사용중인 소켓들
     private activeSockets: { room: string; id: string }[] = [];
 
-    private logger: Logger = new Logger('MessageGateway');
+    private logger: Logger = new Logger('VoiceChatGateway');
 
+    // 방에 입장
     @SubscribeMessage('joinRoom')
     public joinRoom(client: Socket, room: string): void {
-        /*
-        client.join(room);
-        client.emit('joinedRoom', room);
-        */
 
+        // 이미 존재하는지 판별
         const existingSocket = this.activeSockets?.find(
             (socket) => socket.room === room && socket.id === client.id,
         );
 
+        // 이미 존재하는 것이 아니면 만들기
         if (!existingSocket) {
             this.activeSockets = [...this.activeSockets, { id: client.id, room }];
             client.emit(`${room}-update-user-list`, {
@@ -42,7 +42,6 @@ export class MessageGateway implements OnGatewayInit, OnGatewayDisconnect {
                 user: client.id,
             });
         }
-
         return this.logger.log(`Client ${client.id} joined ${room}`);
     }
 
@@ -80,6 +79,7 @@ export class MessageGateway implements OnGatewayInit, OnGatewayDisconnect {
 
         if (!existingSocket) return;
 
+        // 현재 사용중인 소켓 배열에서 제거
         this.activeSockets = this.activeSockets.filter(
             (socket) => socket.id !== client.id,
         );
@@ -90,4 +90,5 @@ export class MessageGateway implements OnGatewayInit, OnGatewayDisconnect {
 
         this.logger.log(`Client disconnected: ${client.id}`);
     }
+
 }

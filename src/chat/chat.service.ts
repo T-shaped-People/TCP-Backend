@@ -10,7 +10,7 @@ import { v4 as getUUID } from 'uuid';
 import { createChatRoomDTO } from 'src/chat/dto/request/create-chat-room.dto';
 import { SaveChatDTO } from 'src/chat/dto/request/save-chat.dto';
 import { getChatListDTO } from 'src/chat/dto/request/get-chatlist.dto';
-import { Chat } from 'src/chat/chat';
+import { Chat } from 'src/chat/chat.model';
 
 @Injectable()
 export class ChatService {
