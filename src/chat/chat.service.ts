@@ -8,9 +8,9 @@ import { ChatRoomEntity } from 'src/chat/entities/chat-room.entity';
 import { TeamUtil } from 'src/team/team.util';
 
 import { v4 as getUUID } from 'uuid';
-import { createChatRoomDTO } from 'src/chat/dto/create-chat-room.dto';
-import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
-import { getChatListDTO } from 'src/chat/dto/get-chatlist.dto';
+import { createChatRoomDTO } from 'src/chat/dto/request/create-chat-room.dto';
+import { SaveChatDTO } from 'src/chat/dto/request/save-chat.dto';
+import { getChatListDTO } from 'src/chat/dto/request/get-chatlist.dto';
 import { Chat } from 'src/chat/chat';
 
 @Injectable()
@@ -20,6 +20,18 @@ export class ChatService {
         @InjectRepository(ChatRoomEntity) private chatRoomRepository: Repository<ChatRoomEntity>,
         private teamUtil: TeamUtil
     ) {}
+
+    async getRoomListByTeam(user: User, teamId: string): Promise<ChatRoomEntity[]> {
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        
+        return this.chatRoomRepository.find({
+            where: {
+                teamId
+            }
+        });
+    }
 
     async getRoomListByUser(user: User): Promise<ChatRoomEntity[]> {
         return this.chatRoomRepository.createQueryBuilder('c')
@@ -35,7 +47,7 @@ export class ChatService {
             .getRawMany<ChatRoomEntity>();
     }
 
-    async getChatRoom(teamId: string, user: User, roomId: string):Promise<ChatRoomEntity> {
+    async getRoom(user: User, teamId: string, roomId: string):Promise<ChatRoomEntity> {
         const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
         if (teamInfo === null) throw new NotFoundException('Team not found');
         if (memberInfo === null) throw new NotFoundException('Not joined team');
@@ -51,7 +63,7 @@ export class ChatService {
 
     async getChatList(user: User, dto: getChatListDTO) {
         const { teamId, roomId, startChatId } = dto;
-        await this.getChatRoom(teamId, user, roomId);
+        await this.getRoom(user, teamId, roomId);
         
         const chatList: ChatEntity[] = await this.chatRepository.find({
             relations: {
@@ -97,7 +109,7 @@ export class ChatService {
 
     async saveChat(user: User, dto: SaveChatDTO): Promise<Chat> {
         const { teamId, roomId, content } = dto;
-        await this.getChatRoom(teamId, user, roomId);
+        await this.getRoom(user, teamId, roomId);
         
         const newChat = await this.chatRepository.save(
             plainToClass(ChatEntity, {

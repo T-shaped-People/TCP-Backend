@@ -2,8 +2,8 @@ import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnectio
 import { Server, Socket } from 'socket.io';
 import { User } from 'src/auth/user';
 import { WSAuthUtil } from 'src/auth/WS-auth.util';
-import { ChatRoomJoinDto } from 'src/chat/dto/chat-room-join.dto';
-import { SaveChatDTO } from 'src/chat/dto/save-chat.dto';
+import { ChatRoomJoinDto } from 'src/chat/dto/request/chat-room-join.dto';
+import { SaveChatDTO } from 'src/chat/dto/request/save-chat.dto';
 
 import { ChatService } from './chat.service';
 
@@ -57,7 +57,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const clientInfo = this.clients[client.id];
         if (!clientInfo?.user) return;
         const {teamId, roomId, user} = {...data, ...clientInfo};
-        clientInfo.roomId = (await this.chatService.getChatRoom(teamId, user, roomId)).id;
+        clientInfo.roomId = (await this.chatService.getRoom(user, teamId, roomId)).id;
 
         client.join(clientInfo.roomId);
         this.server.to(clientInfo.roomId).emit('chat:user-join', {
