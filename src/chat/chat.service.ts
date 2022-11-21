@@ -6,7 +6,6 @@ import { LessThan, Repository } from 'typeorm'
 import { ChatEntity } from 'src/chat/entities/chat.entity';
 import { ChatRoomEntity } from 'src/chat/entities/chat-room.entity';
 import { TeamUtil } from 'src/team/team.util';
-
 import { v4 as getUUID } from 'uuid';
 import { createChatRoomDTO } from 'src/chat/dto/request/create-chat-room.dto';
 import { SaveChatDTO } from 'src/chat/dto/request/save-chat.dto';
@@ -102,7 +101,7 @@ export class ChatService {
         const roomInfo = await this.chatRoomRepository.findOne({where:{title: roomTitle}});
         if (roomInfo) throw new ConflictException('Chat room title already exists');
         
-        const newRoomId = getUUID().replaceAll('-', '');
+        const newRoomId = getUUID().replaceAll("-", "");
         const newRoom: ChatRoomEntity = plainToClass(ChatRoomEntity, {
             id: newRoomId,
             teamId: teamId,
