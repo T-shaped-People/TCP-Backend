@@ -161,4 +161,18 @@ export class ChatService {
         return { voiceRoomId: newRoomId }
     }
 
+    async getVoiceRoomListByTeam(user: User, teamId: string) {
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        
+        return this.voiceRoomRepository.find({
+            where: {
+                teamId
+            }
+        });
+    }
+
+
+
 }

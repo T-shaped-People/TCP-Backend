@@ -25,7 +25,7 @@ export class ChatController {
         return this.chatService.getRoomListByUser(user);
     }
 
-     @Get('room/:teamId')
+    @Get('room/:teamId')
     getChatRoomByTeam(
         @GetUser() user: User,
         @Param('teamId') teamId: string
@@ -70,4 +70,13 @@ export class ChatController {
         this.logger.log(dto);
         return this.chatService.createVoiceRoom(user, dto);
     }
+
+    @Get('voice/:teamId')
+    getVoiceRoomByTeam(
+        @GetUser() user: User,
+        @Param('teamId') teamId: string
+    ) {
+        return this.chatService.getRoomListByTeam(user, teamId);
+    }
+
 }
