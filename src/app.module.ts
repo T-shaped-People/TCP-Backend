@@ -16,6 +16,7 @@ import {
   utilities as nestWinstonModuleUtilities,
   WinstonModule,
 } from 'nest-winston';
+import { LinkModule } from 'src/link/link.module';
 
 @Module({
   imports: [
@@ -53,7 +54,9 @@ import {
     ChatModule,
     TodoModule,
     AlarmModule,
-    CalendarModule],
+    CalendarModule,
+    LinkModule
+  ],
   controllers: [],
 })
 export class AppModule {}

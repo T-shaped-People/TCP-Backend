@@ -56,7 +56,6 @@ export class CalendarService {
         const calendar: CalendarEntity = await this.calendarRepository.findOne({
             where: {id}
         });
-        if (calendar.usercode !== user.usercode) throw new ForbiddenException('No permission');
         calendar.startDate = new Date(startDate);
         calendar.endDate = new Date(endDate);
         calendar.content = content;
