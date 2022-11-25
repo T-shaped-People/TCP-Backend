@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Inject, Get, Param, Post, UseGuards, Delete } from '@nestjs/common';
 import JwtAuthGuard from 'src/auth/auth.guard';
 import { ChatService } from 'src/chat/chat.service';
 import { GetUser } from 'src/auth/getUser.decorator';
@@ -9,6 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import { getChatRoomDTO } from 'src/chat/dto/request/get-chat-room.dto';
 import { createVoiceRoomDTO } from './dto/request/create-voice-room.dto';
+import { deleteChatDTO } from './dto/request/delete-chat.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('chat')
@@ -77,6 +78,14 @@ export class ChatController {
         @Param('teamId') teamId: string
     ) {
         return this.chatService.getRoomListByTeam(user, teamId);
+    }
+
+    @Delete('chat/:teamId/:chatId')
+    deleteChatByChatId(
+        @GetUser() user: User,
+        @Param() dto: deleteChatDTO
+    ) {
+        return this.chatService.deleteChatByChatId(user, dto);
     }
 
 }

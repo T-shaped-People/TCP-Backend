@@ -13,6 +13,7 @@ import { getChatListDTO } from 'src/chat/dto/request/get-chatlist.dto';
 import { Chat } from 'src/chat/chat.model';
 import { createVoiceRoomDTO } from './dto/request/create-voice-room.dto';
 import { VoiceRoomEntity } from './entities/voice-room.entity';
+import { deleteChatDTO } from './dto/request/delete-chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -173,6 +174,15 @@ export class ChatService {
         });
     }
 
-
+    async deleteChatByChatId(user: User, dto: deleteChatDTO): Promise<void> {
+        const { teamId, chatId } = dto; 
+        const { team: teamInfo, member: memberInfo } = await this.teamUtil.getTeamAndMember(teamId, user.usercode);
+        if (teamInfo === null) throw new NotFoundException('Team not found');
+        if (memberInfo === null) throw new NotFoundException('Not joined team');
+        if (!await this.chatRepository.countBy({ id: chatId, usercode: user.usercode })) {
+            throw new NotFoundException("채팅을 찾을 수 없습니다.");
+        }        
+        await this.chatRepository.delete({id: chatId});
+    }
 
 }
