@@ -77,7 +77,7 @@ export class ChatController {
         @GetUser() user: User,
         @Param('teamId') teamId: string
     ) {
-        return this.chatService.getRoomListByTeam(user, teamId);
+        return this.chatService.getVoiceRoomListByTeam(user, teamId);
     }
 
     @Delete('chat/:teamId/:chatId')
