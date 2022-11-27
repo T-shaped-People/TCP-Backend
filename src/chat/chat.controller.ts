@@ -80,7 +80,7 @@ export class ChatController {
         return this.chatService.getVoiceRoomListByTeam(user, teamId);
     }
 
-    @Delete('chat/:teamId/:chatId')
+    @Delete(':teamId/:chatId')
     deleteChatByChatId(
         @GetUser() user: User,
         @Param() dto: deleteChatDTO

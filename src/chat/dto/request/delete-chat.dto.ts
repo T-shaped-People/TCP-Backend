@@ -1,9 +1,9 @@
-import { IsString } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 
 export class deleteChatDTO {
     @IsString()
     teamId: string;
 
-    @IsString()
+    @IsNumber()
     chatId: number;
 }

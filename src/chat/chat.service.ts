@@ -182,7 +182,10 @@ export class ChatService {
         if (!await this.chatRepository.countBy({ id: chatId, usercode: user.usercode })) {
             throw new NotFoundException("채팅을 찾을 수 없습니다.");
         }        
-        await this.chatRepository.delete({id: chatId});
+        await this.chatRepository.createQueryBuilder()
+            .update(ChatEntity)
+            .set({ deleted: true, content: "삭제된 메세지 입니다"})
+            .where("id = :chatId", { chatId: chatId })
+            .execute();
     }
-
 }
