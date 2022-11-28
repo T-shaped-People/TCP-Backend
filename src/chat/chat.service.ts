@@ -102,7 +102,12 @@ export class ChatService {
             throw new ForbiddenException('You do not have permission for this team');
         }
 
-        const roomInfo = await this.chatRoomRepository.findOne({where:{title: roomTitle}});
+        const roomInfo = await this.chatRoomRepository.findOne({
+            where: {
+                teamId,
+                title: roomTitle
+            }
+        });
         if (roomInfo) throw new ConflictException('Chat room title already exists');
         
         const newRoomId = getUUID().replaceAll("-", "");
@@ -148,8 +153,13 @@ export class ChatService {
             throw new ForbiddenException('You do not have permission for this team');
         }
 
-        const roomInfo = await this.voiceRoomRepository.findOne({where:{title: roomTitle}});
-        if (roomInfo) throw new ConflictException('Chat room title already exists');
+        const roomInfo = await this.voiceRoomRepository.findOne({
+            where: {
+                teamId,
+                title: roomTitle
+            }
+        });
+        if (roomInfo) throw new ConflictException('Voice room title already exists');
         
         const newRoomId = getUUID().replaceAll("-", "");
         const newRoom: ChatRoomEntity = plainToClass(VoiceRoomEntity, {
